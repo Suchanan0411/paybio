@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* โหมดมืดเป็นค่าเริ่มต้น — <html data-theme="light"> สลับเป็นโหมดสว่าง */
+:root {
+  --background: #020617;
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-noto-sans-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+/* สีหลักของแบรนด์ (ฟ้าตามโลโก้) และสีตัวอักษรหลัก */
+@theme {
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-ink: #ffffff;
+}
+
+/*
+ * โหมดสว่าง: กลับด้านสเกล slate (พื้นหลังเข้ม → อ่อน, ตัวอักษรอ่อน → เข้ม)
+ * และใช้เฉดเข้มขึ้นสำหรับตัวอักษรสีเน้น เพื่อให้อ่านง่ายบนพื้นขาว
+ */
+[data-theme="light"] {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  color-scheme: light;
+
+  --color-ink: #0f172a;
+  --color-slate-200: #1e293b;
+  --color-slate-300: #334155;
+  --color-slate-400: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-600: #94a3b8;
+  --color-slate-700: #cbd5e1;
+  --color-slate-800: #e2e8f0;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #f8fafc;
+
+  --color-brand-300: #1d4ed8;
+  --color-brand-400: #2563eb;
+  --color-amber-400: #d97706;
+  --color-rose-300: #be123c;
+  --color-rose-400: #e11d48;
+  --color-red-400: #dc2626;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
