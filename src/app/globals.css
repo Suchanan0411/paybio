@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* dark: ใช้ตามธีมที่เลือกบน <html data-theme> ไม่ใช่ตามการตั้งค่าเครื่อง */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* โหมดมืดเป็นค่าเริ่มต้น — <html data-theme="light"> สลับเป็นโหมดสว่าง */
 :root {
   --background: #020617;
@@ -11,15 +14,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-noto-sans-thai), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* สีหลักของแบรนด์ (ฟ้าตามโลโก้) และสีตัวอักษรหลัก */
+/* สีหลักของแบรนด์ (น้ำเงินตามโลโก้) และสีตัวอักษรหลัก */
 @theme {
   --color-brand-300: #93c5fd;
-  --color-brand-400: #60a5fa;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
+  --color-brand-400: #6b95f5;
+  --color-brand-500: #1e4fd8;
+  --color-brand-600: #1a43b8;
+  --color-brand-700: #163a9e;
   --color-ink: #ffffff;
 }
 
@@ -43,8 +47,8 @@
   --color-slate-900: #ffffff;
   --color-slate-950: #f8fafc;
 
-  --color-brand-300: #1d4ed8;
-  --color-brand-400: #2563eb;
+  --color-brand-300: #163a9e;
+  --color-brand-400: #1e4fd8;
   --color-amber-400: #d97706;
   --color-rose-300: #be123c;
   --color-rose-400: #e11d48;
@@ -59,4 +63,21 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/*
+ * ธีมหน้าร้าน: element ที่มี class shop-theme รับเฉด --p300..--p700 จาก style (src/lib/shop-theme.ts)
+ * แล้วแทนที่สีแบรนด์ทั้งหมดภายในนั้น (โหมดสว่างใช้เฉดเข้มสำหรับตัวอักษรสีเน้น เหมือนสีหลัก)
+ */
+.shop-theme {
+  --color-brand-300: var(--p300);
+  --color-brand-400: var(--p400);
+  --color-brand-500: var(--p500);
+  --color-brand-600: var(--p600);
+  --color-brand-700: var(--p700);
+}
+
+[data-theme="light"] .shop-theme {
+  --color-brand-300: var(--p700);
+  --color-brand-400: var(--p500);
 }

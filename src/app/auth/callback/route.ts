@@ -5,14 +5,19 @@ import { createSupabaseServerClient, postAuthPath } from '@/lib/supabase-server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const tokenHash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
   const next = searchParams.get('next');
 
-  if (code) {
+  // code = OAuth / PKCE, token_hash = ลิงก์ในอีเมล (magic link, รีเซ็ตรหัสผ่าน) ที่ใช้ได้ครั้งเดียว
+  if (code || (tokenHash && (type === 'magiclink' || type === 'recovery' || type === 'email'))) {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = code
+      ? await supabase.auth.exchangeCodeForSession(code)
+      : await supabase.auth.verifyOtp({ token_hash: tokenHash!, type: type as 'magiclink' | 'recovery' | 'email' });
     if (!error && data.user) {
       // ยอมรับเฉพาะ path ภายในเว็บ เพื่อป้องกัน open redirect
-      const target = next?.startsWith('/') && !next.startsWith('//') ? next : await postAuthPath(data.user.id);
+      const target = next?.startsWith('/') && !next.startsWith('//') ? next : await postAuthPath(data.user);
       return NextResponse.redirect(`${origin}${target}`);
     }
   }

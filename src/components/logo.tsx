@@ -1,37 +1,30 @@
-import { useId, type SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-// สัญลักษณ์ PayBio: กล่องสีฟ้า คลื่นสัญญาณ และเครื่องหมายถูก
+// สัญลักษณ์ PayBio: กระเป๋าเงินสีน้ำเงิน การ์ดสีฟ้า และคลื่นสัญญาณ
 export function LogoMark(props: SVGProps<SVGSVGElement>) {
-  const gradientId = useId();
   return (
-    <svg viewBox="0 0 48 48" aria-hidden="true" {...props}>
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#4f9cf9" />
-          <stop offset="1" stopColor="#2563eb" />
-        </linearGradient>
-      </defs>
-      <rect width="48" height="48" rx="12" fill={`url(#${gradientId})`} />
-      <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12.7 18.5A13 13 0 0 1 35.3 18.5" opacity=".75" />
-        <path d="M16.2 20.5A9 9 0 0 1 31.8 20.5" opacity=".9" />
-        <path d="M19.7 22.5A5 5 0 0 1 28.3 22.5" />
-        <path d="M17.5 30.5 22 35l9-9" strokeWidth="3" />
+    <svg viewBox="0 -4 110 116" aria-hidden="true" {...props}>
+      <rect x="17" y="5" width="74" height="45" rx="11" fill="#38bdf8" transform="rotate(-8 54 27)" />
+      <rect x="0" y="33" width="110" height="78" rx="24" fill="#1e4fd8" />
+      <g fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round">
+        <path d="M35.1 91.2A23 23 0 1 1 75.4 91.2" />
+        <path d="M45.4 86.9A12 12 0 1 1 65.1 86.9" />
+        <circle cx="55.25" cy="80" r="3.6" strokeWidth="4.2" />
       </g>
     </svg>
   );
 }
 
-// โลโก้เต็ม: สัญลักษณ์ + ตัวอักษร Pay / BIO
+// โลโก้เต็ม: สัญลักษณ์ + ตัวอักษร PayBio (สีตามต้นฉบับ — โหมดมืดวางบนกรอบขาวให้ Pay สีดำยังมองเห็น)
 export function Logo({ size = 'md' }: { size?: 'sm' | 'md' }) {
-  const mark = size === 'sm' ? 'w-8 h-8' : 'w-10 h-10';
-  const pay = size === 'sm' ? 'text-xl' : 'text-2xl';
+  const mark = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
+  const text = size === 'sm' ? 'text-2xl' : 'text-3xl';
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-2 dark:bg-white dark:px-3 dark:py-1.5 dark:rounded-xl">
       <LogoMark className={`${mark} shrink-0`} />
-      <span className="flex flex-col leading-none">
-        <span className={`${pay} font-bold text-brand-500 tracking-tight`}>Pay</span>
-        <span className="text-[9px] font-semibold tracking-[0.35em] text-slate-400 mt-0.5">BIO</span>
+      <span className={`${text} font-display font-bold tracking-tight leading-none`}>
+        <span className="text-[#0b172f]">Pay</span>
+        <span className="text-[#1e4fd8]">Bio</span>
       </span>
     </span>
   );

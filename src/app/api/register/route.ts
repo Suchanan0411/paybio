@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getCurrentUser, getShopByUserId } from '@/lib/supabase-server';
 
+// ชื่อที่ซ้ำกับหน้าของระบบ (src/app/*) — ร้านที่ใช้ชื่อเหล่านี้จะเปิดหน้าร้านไม่ได้
+const RESERVED_SLUGS = new Set([
+  'admin', 'api', 'auth', 'dashboard', 'demo', 'login', 'logout', 'manage', 'order', 'pricing', 'register', 'settings', 'help', 'about',
+  'reset-password', 'terms', 'privacy',
+]);
+
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
@@ -31,6 +37,10 @@ export async function POST(req: Request) {
         { error: 'ลิงก์ร้านค้าใช้ได้เฉพาะตัวอักษร ตัวเลข และขีด (-) เท่านั้น' },
         { status: 400 }
       );
+    }
+
+    if (RESERVED_SLUGS.has(slug)) {
+      return NextResponse.json({ error: 'ชื่อ URL นี้เป็นชื่อที่ระบบใช้อยู่ กรุณาเลือกชื่ออื่น' }, { status: 400 });
     }
 
     if (!/^(\d{10}|\d{13}|\d{15})$/.test(promptpay_number)) {

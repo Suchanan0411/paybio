@@ -49,6 +49,10 @@ export default function RegisterShopPage() {
           router.replace('/manage');
           return;
         }
+        if (data.user.isAdmin) {
+          router.replace('/admin');
+          return;
+        }
         setAccount(data.user);
         setFormData((prev) => ({ ...prev, shop_name: prev.shop_name || data.user.name || '' }));
         setChecking(false);
@@ -148,7 +152,7 @@ export default function RegisterShopPage() {
               required
               value={formData.shop_name}
               onChange={handleChange}
-              placeholder="เช่น Tipha Shop"
+              placeholder="เช่น My Shop"
               className={inputClass}
             />
           </div>
@@ -165,7 +169,7 @@ export default function RegisterShopPage() {
                 required
                 value={formData.slug}
                 onChange={handleChange}
-                placeholder="tipha-shop"
+                placeholder="my-shop"
                 className="w-full bg-transparent px-1 py-2.5 text-sm text-ink placeholder-slate-500 focus:outline-none font-mono"
               />
             </div>

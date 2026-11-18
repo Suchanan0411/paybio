@@ -32,11 +32,12 @@ function errorMessage(err: unknown) {
   return msg || 'เกิดข้อผิดพลาด กรุณาลองใหม่';
 }
 
-// ไปหน้าถัดไปตามสถานะ: ยังไม่มีร้าน → ลงทะเบียนร้าน, มีร้านแล้ว → จัดการร้าน
+// ไปหน้าถัดไปตามสถานะ: admin → แผงผู้ดูแล, ยังไม่มีร้าน → ลงทะเบียนร้าน, มีร้านแล้ว → จัดการร้าน
 async function nextPath() {
   const res = await fetch('/api/me', { cache: 'no-store' });
   if (!res.ok) return null;
   const data = await res.json();
+  if (data.user?.isAdmin) return '/admin';
   return data.shop ? '/manage' : '/register';
 }
 
@@ -54,8 +55,18 @@ export default function LoginForm() {
   const [pendingProvider, setPendingProvider] = useState<Provider | null>(null);
   const [errorMsg, setErrorMsg] = useState(searchParams.get('error') ?? '');
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [forgot, setForgot] = useState(false);
+  const [resetSentTo, setResetSentTo] = useState<string | null>(null);
 
   const isSignUp = mode === 'signup';
+
+  // ลบ ?error= ออกจาก URL หลังแสดงแล้ว เพื่อไม่ให้ error เก่าค้างเมื่อรีเฟรช
+  useEffect(() => {
+    if (window.location.search.includes('error=') || window.location.hash.includes('error=')) {
+      const mode = new URLSearchParams(window.location.search).get('mode');
+      window.history.replaceState(null, '', mode ? `/login?mode=${mode}` : '/login');
+    }
+  }, []);
 
   // ถ้าล็อกอินอยู่แล้ว พาไปหน้าถัดไปทันที
   useEffect(() => {
@@ -126,6 +137,93 @@ export default function LoginForm() {
       setLoading(false);
     }
   };
+
+  const handleForgot = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      });
+      if (error) throw error;
+      setResetSentTo(email.trim());
+    } catch (err) {
+      setErrorMsg(errorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (forgot) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4">
+        <Link href="/" aria-label="PayBio หน้าแรก" className="mb-6">
+          <Logo />
+        </Link>
+        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          {resetSentTo ? (
+            <div className="text-center">
+              <div className="w-14 h-14 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <MailCheck className="w-7 h-7 text-brand-400" />
+              </div>
+              <h1 className="text-xl font-bold">ตรวจสอบอีเมลของคุณ</h1>
+              <p className="text-sm text-slate-400 mt-2">
+                ถ้า <span className="text-ink font-medium">{resetSentTo}</span> มีบัญชีอยู่ เราได้ส่งลิงก์ตั้งรหัสผ่านใหม่ไปแล้ว
+                <br />
+                เปิดลิงก์จากเบราว์เซอร์นี้เพื่อตั้งรหัสผ่านใหม่
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleForgot} className="space-y-4">
+              <div className="text-center mb-2">
+                <h1 className="text-2xl font-bold">ลืมรหัสผ่าน</h1>
+                <p className="text-sm text-slate-400 mt-1">กรอกอีเมลที่ใช้สมัคร เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้</p>
+              </div>
+              {errorMsg && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+              <div>
+                <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5 mb-1.5">
+                  <Mail className="w-3.5 h-3.5 text-slate-400" /> อีเมล
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-brand-500/20"
+              >
+                {loading ? 'กำลังส่ง...' : 'ส่งลิงก์ตั้งรหัสผ่านใหม่'}
+              </button>
+            </form>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setForgot(false);
+              setResetSentTo(null);
+              setErrorMsg('');
+            }}
+            className="mt-6 w-full flex items-center justify-center gap-1.5 text-xs text-slate-400 hover:text-ink transition cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> กลับไปหน้าเข้าสู่ระบบ
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (sentTo) {
     return (
@@ -289,6 +387,18 @@ export default function LoginForm() {
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 className={inputClass}
               />
+              {!isSignUp && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgot(true);
+                    setErrorMsg('');
+                  }}
+                  className="mt-1.5 text-[11px] text-brand-400 hover:underline cursor-pointer"
+                >
+                  ลืมรหัสผ่าน?
+                </button>
+              )}
             </div>
 
             {isSignUp && (
@@ -332,7 +442,11 @@ export default function LoginForm() {
         )}
 
         <p className="mt-6 text-center text-[11px] text-slate-500">
-          การดำเนินการต่อถือว่าคุณยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัวของ PayBio
+          การดำเนินการต่อถือว่าคุณยอมรับ{' '}
+          <Link href="/terms" className="underline hover:text-ink">ข้อกำหนดการใช้งาน</Link>
+          และ
+          <Link href="/privacy" className="underline hover:text-ink">นโยบายความเป็นส่วนตัว</Link>
+          ของ PayBio
         </p>
       </div>
     </div>

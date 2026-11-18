@@ -17,16 +17,53 @@ import {
   Receipt,
   Settings,
   Trash2,
+  Pencil,
   Image as ImageIcon,
   PartyPopper,
   X,
+  ShieldAlert,
+  Download,
+  Globe,
+  Lock,
+  Sparkles,
+  ShieldCheck,
+  Truck,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Logo } from '@/components/logo';
+import { OrderNotifications } from '@/components/order-notifications';
+import { ThemePicker } from '@/components/theme-picker';
+import { PromptpayQrUpload } from '@/components/promptpay-qr-upload';
+import { OrderAlerts } from '@/components/order-alerts';
+import { AccountProfile, type Account as AccountInfo } from '@/components/account-profile';
+import { OrderFulfillmentDialog } from '@/components/order-fulfillment';
+import { FULFILLMENT_LABEL, carrierOf, type Fulfillment } from '@/lib/order-stages';
+import { PLAN_LIMITS, PLAN_NAMES, planOf } from '@/lib/plans';
+import type { SlipCheck } from '@/lib/slip-check';
+
+function formatBytes(bytes: number) {
+  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toLocaleString('th-TH', { maximumFractionDigits: 1 })} GB`;
+  return `${(bytes / 1024 ** 2).toLocaleString('th-TH', { maximumFractionDigits: 1 })} MB`;
+}
 
 type OrderStatus = 'pending' | 'paid' | 'rejected';
 
-type Shop = { id: string; shop_name: string; slug: string; promptpay_number: string; bio: string | null };
+type Shop = {
+  id: string;
+  shop_name: string;
+  slug: string;
+  promptpay_number: string;
+  bio: string | null;
+  suspended_at?: string | null;
+  suspended_reason?: string | null;
+  plan?: string | null;
+  custom_domain?: string | null;
+  order_webhook_url?: string | null;
+  order_webhook_secret?: string | null;
+  theme?: unknown;
+  plan_expires_at?: string | null;
+  promptpay_qr_url?: string | null;
+};
 type Product = { id: string; name: string; price: number; created_at?: string };
 type Order = {
   id: string;
@@ -34,10 +71,23 @@ type Order = {
   item_title: string;
   amount: number;
   slip_url: string | null;
+  slip_hash?: string | null;
   status: OrderStatus;
   created_at?: string;
+  slip_check?: SlipCheck | null;
+  quantity?: number | null;
+  customer_name?: string | null;
+  customer_contact?: string | null;
+  note?: string | null;
+  fulfillment?: Fulfillment | null;
+  carrier?: string | null;
+  tracking_number?: string | null;
+  shop_message?: string | null;
+  customer_email?: string | null;
+  track_token?: string | null;
 };
-type Account = { email?: string; name?: string | null; avatar?: string | null; provider?: string };
+type SlipStorage = { used: number; limit: number; retentionDays: number | null };
+type Account = AccountInfo;
 type Tab = 'overview' | 'orders' | 'products' | 'settings';
 
 const TABS: { key: Tab; label: string; Icon: typeof Store }[] = [
@@ -58,6 +108,21 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   paid: 'bg-brand-500/10 text-brand-400 border-brand-500/30',
   rejected: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
 };
+
+const VERDICT: Record<SlipCheck['verdict'], { label: string; style: string }> = {
+  pass: { label: 'สลิปผ่าน', style: 'text-brand-400 border-brand-500/30 bg-brand-500/10' },
+  warn: { label: 'ควรตรวจซ้ำ', style: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
+  fail: { label: 'สลิปไม่ผ่าน', style: 'text-rose-400 border-rose-500/30 bg-rose-500/10' },
+  unchecked: { label: 'ตรวจยอดเอง', style: 'text-slate-400 border-slate-700 bg-slate-800' },
+};
+
+const CHECK_ICON = { pass: '✓', warn: '!', fail: '✕', skip: '–' } as const;
+const CHECK_STYLE = {
+  pass: 'text-brand-400',
+  warn: 'text-amber-400',
+  fail: 'text-rose-400',
+  skip: 'text-slate-500',
+} as const;
 
 const inputClass =
   'w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2 text-sm text-ink placeholder-slate-500 focus:outline-none focus:border-brand-500';
@@ -89,14 +154,22 @@ export default function ManageShopPage() {
   const [shop, setShop] = useState<Shop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [slipStorage, setSlipStorage] = useState<SlipStorage | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [welcome, setWelcome] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewOrder, setPreviewOrder] = useState<Order | null>(null);
+  const [rechecking, setRechecking] = useState(false);
+  const [exportMonths, setExportMonths] = useState('1');
+  const [domainInput, setDomainInput] = useState('');
+  const [savingDomain, setSavingDomain] = useState(false);
+  const [appHost, setAppHost] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [orderFilter, setOrderFilter] = useState<'all' | OrderStatus>('all');
+  const [fulfillOrder, setFulfillOrder] = useState<Order | null>(null);
+  const [customerEmail, setCustomerEmail] = useState(false);
 
   const [shopForm, setShopForm] = useState({ shop_name: '', promptpay_number: '', bio: '' });
   const [savingShop, setSavingShop] = useState(false);
@@ -104,19 +177,27 @@ export default function ManageShopPage() {
   const [newProductName, setNewProductName] = useState('');
   const [newProductPrice, setNewProductPrice] = useState('');
   const [addingProduct, setAddingProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [savingProduct, setSavingProduct] = useState(false);
 
-  const notify = (type: 'ok' | 'error', text: string) => {
+  const notify = useCallback((type: 'ok' | 'error', text: string) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 3000);
-  };
+  }, []);
+
+  const fetchOrders = useCallback(async () => (await api<{ orders: Order[] }>('/api/orders')).orders ?? [], []);
 
   const loadOrdersAndProducts = useCallback(async () => {
     const [p, o] = await Promise.all([
       api<{ products: Product[] }>('/api/products'),
-      api<{ orders: Order[] }>('/api/orders'),
+      api<{ orders: Order[]; storage: SlipStorage | null; customerEmail?: boolean }>('/api/orders'),
     ]);
     setProducts(p.products ?? []);
     setOrders(o.orders ?? []);
+    setSlipStorage(o.storage ?? null);
+    setCustomerEmail(!!o.customerEmail);
   }, []);
 
   useEffect(() => {
@@ -125,7 +206,7 @@ export default function ManageShopPage() {
       try {
         const me = await api<{ user: Account; shop: Shop | null }>('/api/me');
         if (!me.shop) {
-          router.replace('/register');
+          router.replace(me.user.isAdmin ? '/admin' : '/register');
           return;
         }
         setAccount(me.user);
@@ -135,6 +216,8 @@ export default function ManageShopPage() {
           promptpay_number: me.shop.promptpay_number,
           bio: me.shop.bio ?? '',
         });
+        setDomainInput(me.shop.custom_domain ?? '');
+        setAppHost(window.location.hostname);
         await loadOrdersAndProducts();
         if (new URLSearchParams(window.location.search).get('welcome')) {
           setWelcome(true);
@@ -150,7 +233,7 @@ export default function ManageShopPage() {
         setLoading(false);
       }
     })();
-  }, [router, loadOrdersAndProducts]);
+  }, [router, loadOrdersAndProducts, notify]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -189,6 +272,24 @@ export default function ManageShopPage() {
     }
   };
 
+  const handleSaveDomain = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSavingDomain(true);
+    try {
+      const data = await api<{ shop: Shop }>('/api/shop/domain', {
+        method: 'PUT',
+        body: JSON.stringify({ domain: domainInput }),
+      });
+      setShop(data.shop);
+      setDomainInput(data.shop.custom_domain ?? '');
+      notify('ok', data.shop.custom_domain ? 'บันทึกโดเมนแล้ว' : 'ลบโดเมนแล้ว');
+    } catch (err) {
+      notify('error', 'บันทึกโดเมนไม่สำเร็จ: ' + (err instanceof Error ? err.message : ''));
+    } finally {
+      setSavingDomain(false);
+    }
+  };
+
   const handleAddProduct = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAddingProduct(true);
@@ -208,13 +309,53 @@ export default function ManageShopPage() {
     }
   };
 
+  const startEditProduct = (product: Product) => {
+    setEditingProduct(product.id);
+    setEditName(product.name);
+    setEditPrice(String(product.price));
+  };
+
+  const handleSaveProduct = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setSavingProduct(true);
+    try {
+      const data = await api<{ product: Product }>('/api/products', {
+        method: 'PATCH',
+        body: JSON.stringify({ id: editingProduct, name: editName, price: Number(editPrice) }),
+      });
+      setProducts((prev) => prev.map((p) => (p.id === data.product.id ? data.product : p)));
+      setEditingProduct(null);
+      notify('ok', 'บันทึกสินค้าแล้ว');
+    } catch (err) {
+      notify('error', 'แก้ไขสินค้าไม่สำเร็จ: ' + (err instanceof Error ? err.message : ''));
+    } finally {
+      setSavingProduct(false);
+    }
+  };
+
   const handleDeleteProduct = async (product: Product) => {
+    if (!window.confirm(`ลบ "${product.name}" ออกจากร้าน?`)) return;
     try {
       await api('/api/products', { method: 'DELETE', body: JSON.stringify({ id: product.id }) });
       setProducts((prev) => prev.filter((p) => p.id !== product.id));
       notify('ok', `ลบ "${product.name}" แล้ว`);
     } catch (err) {
       notify('error', 'ลบสินค้าไม่สำเร็จ: ' + (err instanceof Error ? err.message : ''));
+    }
+  };
+
+  const recheckSlip = async (order: Order) => {
+    setRechecking(true);
+    try {
+      const data = await api<{ order: Order }>('/api/orders/recheck', { method: 'POST', body: JSON.stringify({ id: order.id }) });
+      setOrders((prev) => prev.map((o) => (o.id === order.id ? data.order : o)));
+      setPreviewOrder(data.order);
+      notify('ok', 'ตรวจสลิปใหม่แล้ว');
+    } catch (err) {
+      notify('error', 'ตรวจสลิปไม่สำเร็จ: ' + (err instanceof Error ? err.message : ''));
+    } finally {
+      setRechecking(false);
     }
   };
 
@@ -257,6 +398,14 @@ export default function ManageShopPage() {
   const pendingOrders = orders.filter((o) => o.status === 'pending');
   const visibleOrders = orderFilter === 'all' ? orders : orders.filter((o) => o.status === orderFilter);
   const shopUrl = `paybio.me/${shop.slug}`;
+  const plan = planOf(shop);
+  const limits = PLAN_LIMITS[plan];
+  const exportOptions = [
+    { value: '1', label: '1 เดือนล่าสุด' },
+    { value: '3', label: '3 เดือนล่าสุด' },
+    { value: '12', label: '12 เดือนล่าสุด' },
+    { value: 'all', label: 'ทั้งหมด' },
+  ].filter((o) => limits.exportMonths != null && (o.value === 'all' ? Infinity : Number(o.value)) <= limits.exportMonths);
 
   const stats = [
     { label: 'ยอดขายที่ชำระแล้ว', value: formatBaht(paidTotal), accent: 'text-brand-400' },
@@ -264,6 +413,34 @@ export default function ManageShopPage() {
     { label: 'คำสั่งซื้อทั้งหมด', value: orders.length.toLocaleString('th-TH') },
     { label: 'สินค้าในร้าน', value: products.length.toLocaleString('th-TH') },
   ];
+
+  const storagePct = slipStorage ? Math.min(100, (slipStorage.used / slipStorage.limit) * 100) : 0;
+  const storageFull = !!slipStorage && slipStorage.retentionDays == null && storagePct >= 90;
+  const storageCard = slipStorage && (
+    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <span className="flex items-center gap-1.5 text-slate-400">
+          <ImageIcon className="w-3.5 h-3.5" /> พื้นที่เก็บรูปสลิป
+        </span>
+        <span className="font-mono text-slate-300">
+          {formatBytes(slipStorage.used)} / {formatBytes(slipStorage.limit)}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+        <div
+          className={`h-full rounded-full ${storagePct >= 90 ? 'bg-rose-500' : storagePct >= 75 ? 'bg-amber-400' : 'bg-brand-500'}`}
+          style={{ width: `${Math.max(storagePct, slipStorage.used > 0 ? 1 : 0)}%` }}
+        />
+      </div>
+      <p className="text-[11px] text-slate-500">
+        {slipStorage.retentionDays != null
+          ? `เก็บสลิป ${slipStorage.retentionDays} วัน — สลิปที่เก่ากว่านี้ หรือเมื่อพื้นที่เต็ม ระบบจะลบสลิปเก่าสุดให้อัตโนมัติ (ข้อมูลออเดอร์และผลตรวจยังอยู่)`
+          : storagePct >= 100
+            ? 'พื้นที่เต็มแล้ว ลูกค้าจะส่งสลิปใหม่ไม่ได้จนกว่าจะอัปเกรดแพ็กเกจ'
+            : 'เก็บสลิปถาวร เมื่อพื้นที่เต็มลูกค้าจะส่งสลิปใหม่ไม่ได้'}
+      </p>
+    </div>
+  );
 
   const orderRow = (order: Order) => (
     <div key={order.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-slate-800/30 transition">
@@ -273,22 +450,50 @@ export default function ManageShopPage() {
           <span className={`px-2 py-0.5 rounded-full border text-[10px] ${STATUS_STYLE[order.status] ?? STATUS_STYLE.pending}`}>
             {STATUS_LABEL[order.status] ?? order.status}
           </span>
+          {order.status === 'paid' && order.fulfillment && (
+            <span className="px-2 py-0.5 rounded-full border text-[10px] border-sky-500/30 bg-sky-500/10 text-sky-300">
+              {FULFILLMENT_LABEL[order.fulfillment]}
+            </span>
+          )}
         </div>
+        {order.tracking_number && (
+          <p className="text-slate-500 mt-0.5 font-mono truncate">
+            📦 {carrierOf(order.carrier)?.label ?? ''} {order.tracking_number}
+          </p>
+        )}
         <p className="text-slate-300 mt-1 truncate">{order.item_title}</p>
+        {(order.customer_name || order.customer_contact) && (
+          <p className="text-slate-400 mt-0.5 truncate">
+            {order.customer_name}
+            {order.customer_contact && <span className="text-slate-500"> · {order.customer_contact}</span>}
+          </p>
+        )}
+        {order.note && <p className="text-slate-500 mt-0.5 whitespace-pre-line break-words">{order.note}</p>}
         <span className="text-[10px] text-slate-500">{formatDate(order.created_at)}</span>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap sm:justify-end">
         <span className="text-sm font-bold text-brand-400 mr-1">{formatBaht(order.amount)}</span>
+        {order.slip_check && (
+          <button
+            onClick={() => setPreviewOrder(order)}
+            title={order.slip_check.checks.map((c) => `${CHECK_ICON[c.status]} ${c.label}`).join('\n')}
+            className={`px-2 py-0.5 rounded-full border text-[10px] flex items-center gap-1 cursor-pointer ${VERDICT[order.slip_check.verdict].style}`}
+          >
+            <ShieldCheck className="w-3 h-3" /> {VERDICT[order.slip_check.verdict].label}
+          </button>
+        )}
         {order.slip_url ? (
           <button
-            onClick={() => setPreviewUrl(order.slip_url)}
+            onClick={() => setPreviewOrder(order)}
             className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 flex items-center gap-1 border border-slate-700 cursor-pointer"
           >
             <ImageIcon className="w-3.5 h-3.5" /> สลิป
           </button>
         ) : (
-          <span className="text-slate-500">ไม่มีสลิป</span>
+          <span className="text-slate-500" title={order.slip_hash ? 'ไฟล์สลิปถูกลบตามอายุ/พื้นที่เก็บของแพ็กเกจ' : undefined}>
+            {order.slip_hash ? 'สลิปหมดอายุ' : 'ไม่มีสลิป'}
+          </span>
         )}
         {order.status !== 'paid' && (
           <button
@@ -308,6 +513,13 @@ export default function ManageShopPage() {
             ปฏิเสธ
           </button>
         )}
+        <button
+          onClick={() => setFulfillOrder(order)}
+          title="อัปเดตการจัดส่ง เลขพัสดุ และข้อความถึงลูกค้า"
+          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1 cursor-pointer"
+        >
+          <Truck className="w-3.5 h-3.5" /> {order.status === 'paid' ? 'จัดส่ง' : 'แจ้งลูกค้า'}
+        </button>
       </div>
     </div>
   );
@@ -345,6 +557,28 @@ export default function ManageShopPage() {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+        <OrderAlerts
+          orders={orders}
+          fetchOrders={fetchOrders}
+          onOrders={setOrders}
+          onOpen={(order) => {
+            setTab('orders');
+            setPreviewOrder(order);
+          }}
+        />
+        {shop.suspended_at && (
+          <div className="flex items-start gap-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4">
+            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-semibold text-rose-400">ร้านของคุณถูกระงับโดยผู้ดูแลระบบ</p>
+              <p className="text-slate-300 text-xs mt-0.5">
+                ลูกค้าจะไม่เห็นสินค้าและสั่งซื้อไม่ได้จนกว่าจะยกเลิกการระงับ
+                {shop.suspended_reason && <> — เหตุผล: {shop.suspended_reason}</>}
+              </p>
+            </div>
+          </div>
+        )}
+
         {welcome && (
           <div className="flex items-start gap-3 bg-brand-500/10 border border-brand-500/30 rounded-2xl p-4">
             <PartyPopper className="w-5 h-5 text-brand-400 shrink-0 mt-0.5" />
@@ -416,6 +650,8 @@ export default function ManageShopPage() {
               ))}
             </div>
 
+            {storageFull && storageCard}
+
             {products.length === 0 && (
               <div className="bg-slate-900 border border-dashed border-slate-700 rounded-2xl p-6 text-center">
                 <Package className="w-8 h-8 text-slate-500 mx-auto mb-2" />
@@ -475,6 +711,36 @@ export default function ManageShopPage() {
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
             </div>
+            <div className="px-4 py-3 border-b border-slate-800 flex flex-wrap items-center gap-2 text-xs">
+              <Download className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-slate-300 font-medium">ส่งออกรายงานยอดขาย (CSV/Excel)</span>
+              {exportOptions.length ? (
+                <div className="flex items-center gap-2 ml-auto">
+                  <select
+                    value={exportMonths}
+                    onChange={(e) => setExportMonths(e.target.value)}
+                    aria-label="ช่วงเวลาที่ส่งออก"
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-ink focus:outline-none focus:border-brand-500"
+                  >
+                    {exportOptions.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                  <a
+                    href={`/api/orders/export?months=${exportMonths}`}
+                    className="text-white px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 font-semibold"
+                  >
+                    ดาวน์โหลด
+                  </a>
+                </div>
+              ) : (
+                <Link href="/pricing" className="ml-auto inline-flex items-center gap-1 text-slate-400 hover:text-brand-400">
+                  <Lock className="w-3 h-3" /> ใช้ได้ตั้งแต่ Pro Merchant
+                </Link>
+              )}
+            </div>
             <div className="divide-y divide-slate-800">
               {visibleOrders.length === 0 ? (
                 <p className="p-6 text-center text-slate-500 text-xs">ยังไม่มีคำสั่งซื้อ</p>
@@ -488,7 +754,13 @@ export default function ManageShopPage() {
         {tab === 'products' && (
           <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
             <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
-              <Package className="w-4 h-4 text-brand-400" /> รายการสินค้า ({products.length})
+              <Package className="w-4 h-4 text-brand-400" /> รายการสินค้า ({products.length}
+              {Number.isFinite(limits.maxProducts) && `/${limits.maxProducts}`})
+              {products.length >= limits.maxProducts && (
+                <Link href="/pricing" className="ml-auto text-xs font-normal text-brand-400 hover:underline">
+                  ครบจำนวนของแพ็กเกจ Free · อัปเกรด
+                </Link>
+              )}
             </div>
 
             <form onSubmit={handleAddProduct} className="flex flex-col sm:flex-row gap-2">
@@ -523,11 +795,61 @@ export default function ManageShopPage() {
               {products.length === 0 ? (
                 <p className="text-xs text-slate-500 py-6 text-center">ยังไม่มีสินค้า เพิ่มชิ้นแรกด้านบนได้เลย</p>
               ) : (
-                products.map((item) => (
+                products.map((item) =>
+                  editingProduct === item.id ? (
+                    <form
+                      key={item.id}
+                      onSubmit={handleSaveProduct}
+                      className="py-3 flex flex-col sm:flex-row gap-2"
+                    >
+                      <input
+                        type="text"
+                        required
+                        autoFocus
+                        aria-label="ชื่อสินค้า"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className={`${inputClass} flex-1`}
+                      />
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        step="0.01"
+                        aria-label="ราคา"
+                        value={editPrice}
+                        onChange={(e) => setEditPrice(e.target.value)}
+                        className={`${inputClass} sm:w-32`}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={savingProduct}
+                          className="text-white flex-1 px-3 py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
+                        >
+                          <Save className="w-4 h-4" /> {savingProduct ? 'กำลังบันทึก...' : 'บันทึก'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct(null)}
+                          className="px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-ink border border-slate-700 transition cursor-pointer"
+                        >
+                          ยกเลิก
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
                   <div key={item.id} className="py-3 flex justify-between items-center gap-3 text-sm">
                     <span className="font-medium text-slate-200 truncate">{item.name}</span>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="font-bold text-brand-400">{formatBaht(item.price)}</span>
+                      <button
+                        onClick={() => startEditProduct(item)}
+                        title="แก้ไขสินค้า"
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-brand-400 hover:bg-brand-500/10 transition cursor-pointer"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleDeleteProduct(item)}
                         title="ลบสินค้า"
@@ -537,14 +859,42 @@ export default function ManageShopPage() {
                       </button>
                     </div>
                   </div>
-                ))
+                  )
+                )
               )}
             </div>
           </div>
         )}
 
         {tab === 'settings' && (
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 max-w-xl">
+          <div className="space-y-4 max-w-xl">
+          {account && (
+            <AccountProfile
+              account={account}
+              onChange={(next) => setAccount((prev) => prev && { ...prev, ...next })}
+              notify={notify}
+            />
+          )}
+
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-3">
+            <Sparkles className="w-5 h-5 text-brand-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-400">แพ็กเกจปัจจุบัน</p>
+              <p className="font-semibold">{PLAN_NAMES[plan]}</p>
+              {plan !== 'free' && shop.plan_expires_at && (
+                <p className="text-[11px] text-amber-400">
+                  ใช้ได้ถึง {new Date(shop.plan_expires_at).toLocaleDateString('th-TH', { dateStyle: 'medium' })} แล้วจะกลับเป็น Free
+                </p>
+              )}
+            </div>
+            <Link href="/pricing" className="text-xs text-brand-400 hover:underline shrink-0">
+              {plan === 'business' ? 'ดูสิทธิประโยชน์' : 'อัปเกรด'}
+            </Link>
+          </div>
+
+          {slipStorage && storageCard}
+
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
             <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
               <Store className="w-4 h-4 text-brand-400" /> ข้อมูลร้านค้า
             </div>
@@ -593,10 +943,78 @@ export default function ManageShopPage() {
               </button>
             </form>
           </div>
+
+          <PromptpayQrUpload
+            url={shop.promptpay_qr_url}
+            onChange={(promptpay_qr_url) => setShop((prev) => prev && { ...prev, promptpay_qr_url })}
+            notify={notify}
+          />
+
+          <ThemePicker
+            shop={shop}
+            level={limits.theme}
+            onShopChange={(next) => setShop((prev) => prev && { ...prev, ...next })}
+            notify={notify}
+          />
+
+          <OrderNotifications
+            lineAllowed={limits.lineNotify}
+            webhookAllowed={limits.webhook}
+            shop={shop}
+            onShopChange={(next) => setShop((prev) => prev && { ...prev, ...next })}
+            notify={notify}
+          />
+
+          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+            <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
+              <Globe className="w-4 h-4 text-brand-400" /> โดเมนของตนเอง (Custom Domain)
+            </div>
+            {limits.customDomain ? (
+              <form onSubmit={handleSaveDomain} className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="shop.example.com"
+                  value={domainInput}
+                  onChange={(e) => setDomainInput(e.target.value)}
+                  className={`${inputClass} font-mono`}
+                />
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  ที่ผู้ให้บริการโดเมน ให้เพิ่มระเบียน <span className="font-mono text-ink">CNAME</span> ของโดเมนนี้ชี้มาที่{' '}
+                  <span className="font-mono text-ink">{appHost}</span> แล้วกดบันทึก
+                  ระบบจะเปิดหน้าร้านเมื่อมีคนเข้าโดเมนนี้ (เว้นว่างแล้วบันทึกเพื่อลบโดเมน)
+                </p>
+                <button
+                  type="submit"
+                  disabled={savingDomain}
+                  className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-xs font-semibold rounded-xl transition cursor-pointer"
+                >
+                  {savingDomain ? 'กำลังบันทึก...' : 'บันทึกโดเมน'}
+                </button>
+              </form>
+            ) : (
+              <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" /> ใช้ได้เฉพาะแพ็กเกจ Business Studio ·{' '}
+                <Link href="/pricing" className="text-brand-400 hover:underline">
+                  ดูแพ็กเกจ
+                </Link>
+              </p>
+            )}
+          </div>
+          </div>
         )}
       </main>
 
       {/* แจ้งเตือน */}
+      {fulfillOrder && (
+        <OrderFulfillmentDialog
+          order={fulfillOrder}
+          emailEnabled={customerEmail}
+          onClose={() => setFulfillOrder(null)}
+          onSaved={(saved) => setOrders((prev) => prev.map((o) => (o.id === saved.id ? saved : o)))}
+          notify={notify}
+        />
+      )}
+
       {toast && (
         <div
           className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-medium shadow-xl border ${
@@ -610,20 +1028,81 @@ export default function ManageShopPage() {
       )}
 
       {/* ดูสลิป */}
-      {previewUrl && (
+      {previewOrder?.slip_url && (
         <div
-          onClick={() => setPreviewUrl(null)}
+          onClick={() => setPreviewOrder(null)}
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
         >
           <div onClick={(e) => e.stopPropagation()} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 max-w-md w-full relative">
-            <button onClick={() => setPreviewUrl(null)} className="absolute top-3 right-3 text-slate-400 hover:text-ink cursor-pointer">
+            <button onClick={() => setPreviewOrder(null)} className="absolute top-3 right-3 text-slate-400 hover:text-ink cursor-pointer">
               <X className="w-4 h-4" />
             </button>
-            <h3 className="text-sm font-semibold mb-3">สลิปการโอนเงิน</h3>
+            <h3 className="text-sm font-semibold mb-3">
+              สลิปการโอนเงิน · <span className="font-mono">{previewOrder.order_number}</span>
+            </h3>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={previewUrl} alt="สลิปการโอนเงิน" className="w-full max-h-[70vh] object-contain rounded-lg bg-slate-950" />
+            <img
+              src={`/api/orders/slip?id=${previewOrder.id}`}
+              alt="สลิปการโอนเงิน"
+              className="w-full max-h-[50vh] object-contain rounded-lg bg-slate-950"
+            />
+            {previewOrder.slip_check ? (
+              <div className="mt-3 rounded-xl border border-slate-800 p-3 text-xs space-y-1.5">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-brand-400" /> ผลตรวจสลิป
+                  <span className={`ml-auto px-2 py-0.5 rounded-full border text-[10px] ${VERDICT[previewOrder.slip_check.verdict].style}`}>
+                    {VERDICT[previewOrder.slip_check.verdict].label}
+                  </span>
+                </p>
+                {previewOrder.slip_check.checks.map((c) => (
+                  <p key={c.key} className="flex gap-2">
+                    <span className={`w-3 text-center font-bold ${CHECK_STYLE[c.status]}`}>{CHECK_ICON[c.status]}</span>
+                    <span className="text-slate-300">{c.label}</span>
+                    {c.detail && <span className="text-slate-500 ml-auto text-right">{c.detail}</span>}
+                  </p>
+                ))}
+                {previewOrder.slip_check.extracted && (
+                  <p className="border-t border-slate-800 pt-2 mt-2 text-[10px] text-slate-500">
+                    {previewOrder.slip_check.bank ? 'ข้อมูลจากธนาคาร (ผ่าน SlipOK)' : 'ข้อมูลที่ AI อ่านจากรูปสลิป'}
+                  </p>
+                )}
+                {previewOrder.slip_check.extracted && (
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px]">
+                    {(
+                      [
+                        ['ยอดเงิน', previewOrder.slip_check.extracted.amount != null ? formatBaht(previewOrder.slip_check.extracted.amount) : null],
+                        ['วันเวลา', previewOrder.slip_check.extracted.datetime ? formatDate(previewOrder.slip_check.extracted.datetime) : null],
+                        ['เลขอ้างอิง', previewOrder.slip_check.extracted.ref],
+                        ['ธนาคารผู้โอน', previewOrder.slip_check.extracted.sender_bank],
+                        ['ผู้รับ', [previewOrder.slip_check.extracted.receiver_name, previewOrder.slip_check.extracted.receiver_account].filter(Boolean).join(' · ') || null],
+                      ] as const
+                    ).map(([label, value]) => (
+                      <div key={label} className="contents">
+                        <dt className="text-slate-500">{label}</dt>
+                        <dd className="text-slate-300 text-right font-mono break-all">{value ?? '-'}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {plan !== 'business' && !previewOrder.slip_check.bank && (
+                  <Link href="/pricing" className="block text-[11px] text-brand-400 hover:underline pt-1">
+                    อัปเกรดเพื่อตรวจ{plan === 'free' ? 'ยอดเงิน วันที่ และ' : ''}สลิปปลอม / สลิปซ้ำ
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-slate-500">ยังไม่มีผลตรวจสลิป (กำลังตรวจ หรือเป็นคำสั่งซื้อก่อนเปิดระบบตรวจ)</p>
+            )}
+            <button
+              onClick={() => recheckSlip(previewOrder)}
+              disabled={rechecking}
+              className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-50 cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${rechecking ? 'animate-spin' : ''}`} />
+              {rechecking ? 'กำลังตรวจสลิป...' : 'ตรวจสลิปใหม่'}
+            </button>
             <a
-              href={previewUrl}
+              href={`/api/orders/slip?id=${previewOrder.id}`}
               target="_blank"
               rel="noreferrer"
               className="block text-center text-xs text-brand-400 hover:text-brand-300 mt-3"

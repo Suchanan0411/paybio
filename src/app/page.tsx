@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { SiteFooter } from '@/components/site-shell';
 import { Store, QrCode, Receipt, ArrowRight, ShieldCheck, Smartphone, Link2 } from 'lucide-react';
 import { GoogleIcon, LineIcon } from '@/components/onboarding';
 import { Logo } from '@/components/logo';
+import { Pricing } from '@/components/pricing';
 
 const STEPS = [
   {
@@ -35,6 +37,9 @@ export default function Home() {
           <Logo size="sm" />
         </Link>
         <nav className="flex items-center gap-2 text-sm">
+          <Link href="/pricing" className="px-3 py-1.5 text-slate-300 hover:text-ink transition">
+            ราคา
+          </Link>
           <Link href="/login" className="px-3 py-1.5 text-slate-300 hover:text-ink transition">
             เข้าสู่ระบบ
           </Link>
@@ -110,10 +115,16 @@ export default function Home() {
           ))}
         </section>
 
+        <section id="pricing" className="max-w-5xl mx-auto px-4 pb-20 scroll-mt-8">
+          <h2 className="text-center text-2xl font-bold">แพ็กเกจและราคา</h2>
+          <p className="text-center text-slate-400 mt-2 mb-8">ทุกแพ็กเกจไม่หักค่าคอมมิชชัน เงินเข้าพร้อมเพย์ของคุณเต็มจำนวน</p>
+          <Pricing />
+        </section>
+
         <section className="max-w-5xl mx-auto px-4 pb-20">
           <div className="bg-linear-to-br from-brand-500/20 to-slate-900 border border-brand-500/30 rounded-3xl p-8 sm:p-12 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold">พร้อมเปิดร้านแล้วหรือยัง?</h2>
-            <p className="text-slate-300 mt-2">สมัครฟรี ไม่มีค่าธรรมเนียมรายเดือน</p>
+            <p className="text-slate-300 mt-2">เริ่มต้นฟรีตลอดชีพ ไม่หักค่าคอมมิชชัน</p>
             <Link
               href="/login?mode=signup"
               className="text-white mt-6 inline-flex items-center gap-2 px-6 py-3 bg-brand-500 hover:bg-brand-600 rounded-xl font-semibold transition"
@@ -124,9 +135,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        PayBio · รับเงินพร้อมเพย์ผ่านลิงก์ใน Bio
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Thai, Geist_Mono } from "next/font/google";
+import { Noto_Sans_Thai, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { THEME_SCRIPT } from "@/lib/theme-script";
@@ -7,6 +7,13 @@ import { THEME_SCRIPT } from "@/lib/theme-script";
 const notoSansThai = Noto_Sans_Thai({
   variable: "--font-noto-sans-thai",
   subsets: ["thai", "latin"],
+});
+
+// ฟอนต์ตัวอักษรโลโก้ PayBio
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: "700",
 });
 
 const geistMono = Geist_Mono({
@@ -25,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="th"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${notoSansThai.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${notoSansThai.variable} ${geistMono.variable} ${poppins.variable} h-full antialiased`}
     >
       <head>
         {/* type เป็น text/plain ฝั่ง client เพื่อไม่ให้ React เตือนเรื่อง script; สคริปต์รันแล้วตอนโหลด HTML */}

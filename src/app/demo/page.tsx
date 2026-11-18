@@ -57,27 +57,11 @@ export default function ShopDemo() {
       return;
     }
 
+    // ร้านตัวอย่าง: จำลองการส่งสลิปในเบราว์เซอร์ ไม่อัปโหลดไฟล์หรือสร้างออเดอร์จริง
     setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('slip', file);
-      formData.append('item_title', item.title);
-      formData.append('amount', item.price.toString());
-
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      setSuccessOrder(data.order);
-    } catch (err) {
-      alert('เกิดข้อผิดพลาด: ' + (err instanceof Error ? err.message : 'ไม่ทราบสาเหตุ'));
-    } finally {
-      setLoading(false);
-    }
+    await new Promise((r) => setTimeout(r, 600));
+    setSuccessOrder({ order_number: `DEMO-${Date.now().toString().slice(-6)}` });
+    setLoading(false);
   };
 
   return (

@@ -59,7 +59,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/auth/social/[pro
     });
     if (verifyError || !session.user) throw verifyError ?? new Error('เข้าสู่ระบบไม่สำเร็จ');
 
-    const target = await postAuthPath(session.user.id);
+    const target = await postAuthPath(session.user);
     console.info(`[social-callback:${provider}] signed in user ${session.user.id} -> ${target}`);
     const res = NextResponse.redirect(`${origin}${target}`);
     res.cookies.delete(STATE_COOKIE);
