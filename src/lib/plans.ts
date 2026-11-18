@@ -42,3 +42,12 @@ export function planOf(
   if (shop?.plan_expires_at && new Date(shop.plan_expires_at).getTime() <= (now ?? Date.now())) return 'free';
   return plan;
 }
+
+// ราคาแพ็กเกจ (บาท) — ใช้ทั้งหน้าราคาและตอนเก็บเงิน
+export type Billing = 'monthly' | 'yearly';
+export const PLAN_PRICES: Record<Exclude<Plan, 'free'>, Record<Billing, number>> = {
+  pro: { monthly: 59, yearly: 590 },
+  business: { monthly: 199, yearly: 1990 },
+};
+export const BILLING_DAYS: Record<Billing, number> = { monthly: 30, yearly: 365 };
+export const PLAN_RANK: Record<Plan, number> = { free: 0, pro: 1, business: 2 };

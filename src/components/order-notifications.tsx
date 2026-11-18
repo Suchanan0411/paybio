@@ -100,7 +100,7 @@ export function OrderNotifications({
         {!lineAllowed ? (
           <p className="text-xs text-slate-400 flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5" /> ใช้ได้ตั้งแต่แพ็กเกจ Pro Merchant ·{' '}
-            <Link href="/pricing" className="text-brand-400 hover:underline">
+            <Link href="/upgrade" className="text-brand-400 hover:underline">
               ดูแพ็กเกจ
             </Link>
           </p>
@@ -196,7 +196,7 @@ export function OrderNotifications({
         {!webhookAllowed ? (
           <p className="text-xs text-slate-400 flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5" /> ใช้ได้เฉพาะแพ็กเกจ Business Studio ·{' '}
-            <Link href="/pricing" className="text-brand-400 hover:underline">
+            <Link href="/upgrade" className="text-brand-400 hover:underline">
               ดูแพ็กเกจ
             </Link>
           </p>

@@ -20,6 +20,7 @@ import {
   BarChart3,
   ShieldAlert,
   History,
+  Wallet,
   Settings2,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -28,6 +29,7 @@ import type { Plan } from '@/lib/plans';
 import { AuditTab } from './audit-tab';
 import { ReportsTab } from './reports-tab';
 import { SlipsTab } from './slips-tab';
+import { BillingTab } from './billing-tab';
 import { card, formatBaht, formatDate, PlanBadge, STATUS_LABEL, STATUS_STYLE, td, th } from './shared';
 
 type Stats = { shops: number; suspended: number; users: number; orders: number; pending: number; paid_total: number };
@@ -70,13 +72,14 @@ type OrderRow = {
   shop_name: string | null;
 };
 type AdminData = { stats: Stats; shops: ShopRow[]; users: UserRow[]; orders: OrderRow[] };
-type Tab = 'overview' | 'shops' | 'users' | 'orders' | 'reports' | 'slips' | 'audit';
+type Tab = 'overview' | 'shops' | 'users' | 'orders' | 'billing' | 'reports' | 'slips' | 'audit';
 
 const TABS: { key: Tab; label: string; Icon: typeof Store }[] = [
   { key: 'overview', label: 'ภาพรวม', Icon: LayoutDashboard },
   { key: 'shops', label: 'ร้านค้า', Icon: Store },
   { key: 'users', label: 'ผู้ใช้', Icon: Users },
   { key: 'orders', label: 'คำสั่งซื้อ', Icon: Receipt },
+  { key: 'billing', label: 'ค่าแพ็กเกจ', Icon: Wallet },
   { key: 'reports', label: 'รายงาน', Icon: BarChart3 },
   { key: 'slips', label: 'สลิปน่าสงสัย', Icon: ShieldAlert },
   { key: 'audit', label: 'ประวัติแอดมิน', Icon: History },
@@ -475,6 +478,8 @@ export default function AdminPage() {
         {tab === 'reports' && <ReportsTab />}
 
         {tab === 'slips' && <SlipsTab onPreview={setPreviewUrl} />}
+
+        {tab === 'billing' && <BillingTab onPreview={setPreviewUrl} />}
 
         {tab === 'audit' && <AuditTab />}
 

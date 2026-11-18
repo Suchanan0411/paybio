@@ -5,7 +5,7 @@ import { getCurrentUser, getShopByUserId } from '@/lib/supabase-server';
 // ชื่อที่ซ้ำกับหน้าของระบบ (src/app/*) — ร้านที่ใช้ชื่อเหล่านี้จะเปิดหน้าร้านไม่ได้
 const RESERVED_SLUGS = new Set([
   'admin', 'api', 'auth', 'dashboard', 'demo', 'login', 'logout', 'manage', 'order', 'pricing', 'register', 'settings', 'help', 'about',
-  'reset-password', 'terms', 'privacy',
+  'reset-password', 'terms', 'privacy', 'upgrade', 'billing',
 ]);
 
 export async function POST(req: Request) {

@@ -738,7 +738,7 @@ export default function ManageShopPage() {
                   </a>
                 </div>
               ) : (
-                <Link href="/pricing" className="ml-auto inline-flex items-center gap-1 text-slate-400 hover:text-brand-400">
+                <Link href="/upgrade" className="ml-auto inline-flex items-center gap-1 text-slate-400 hover:text-brand-400">
                   <Lock className="w-3 h-3" /> ใช้ได้ตั้งแต่ Pro Merchant
                 </Link>
               )}
@@ -759,7 +759,7 @@ export default function ManageShopPage() {
               <Package className="w-4 h-4 text-brand-400" /> รายการสินค้า ({products.length}
               {Number.isFinite(limits.maxProducts) && `/${limits.maxProducts}`})
               {products.length >= limits.maxProducts && (
-                <Link href="/pricing" className="ml-auto text-xs font-normal text-brand-400 hover:underline">
+                <Link href="/upgrade" className="ml-auto text-xs font-normal text-brand-400 hover:underline">
                   ครบจำนวนของแพ็กเกจ Free · อัปเกรด
                 </Link>
               )}
@@ -896,7 +896,7 @@ export default function ManageShopPage() {
                 </p>
               )}
             </div>
-            <Link href="/pricing" className="text-xs text-brand-400 hover:underline shrink-0">
+            <Link href="/upgrade" className="text-xs text-brand-400 hover:underline shrink-0">
               {plan === 'business' ? 'ดูสิทธิประโยชน์' : 'อัปเกรด'}
             </Link>
           </div>
@@ -1003,7 +1003,7 @@ export default function ManageShopPage() {
             ) : (
               <p className="text-xs text-slate-400 flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5" /> ใช้ได้เฉพาะแพ็กเกจ Business Studio ·{' '}
-                <Link href="/pricing" className="text-brand-400 hover:underline">
+                <Link href="/upgrade" className="text-brand-400 hover:underline">
                   ดูแพ็กเกจ
                 </Link>
               </p>
@@ -1094,7 +1094,7 @@ export default function ManageShopPage() {
                   </dl>
                 )}
                 {plan !== 'business' && !previewOrder.slip_check.bank && (
-                  <Link href="/pricing" className="block text-[11px] text-brand-400 hover:underline pt-1">
+                  <Link href="/upgrade" className="block text-[11px] text-brand-400 hover:underline pt-1">
                     อัปเกรดเพื่อตรวจ{plan === 'free' ? 'ยอดเงิน วันที่ และ' : ''}สลิปปลอม / สลิปซ้ำ
                   </Link>
                 )}

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Check, X } from 'lucide-react';
+import { PLAN_PRICES } from '@/lib/plans';
 
 type Billing = 'monthly' | 'yearly';
 
@@ -20,8 +21,8 @@ const PLANS = [
     key: 'pro',
     name: 'Pro Merchant',
     tagline: 'สำหรับร้านที่ขายจริงจัง',
-    monthly: 59,
-    yearly: 590,
+    monthly: PLAN_PRICES.pro.monthly,
+    yearly: PLAN_PRICES.pro.yearly,
     cta: 'เลือก Pro',
     popular: true,
     highlights: ['สินค้าและออเดอร์ไม่จำกัด', 'แจ้งเตือนออเดอร์ผ่าน LINE', 'ลบลายน้ำ PayBio'],
@@ -30,8 +31,8 @@ const PLANS = [
     key: 'business',
     name: 'Business Studio',
     tagline: 'สำหรับแบรนด์และทีม',
-    monthly: 199,
-    yearly: 1990,
+    monthly: PLAN_PRICES.business.monthly,
+    yearly: PLAN_PRICES.business.yearly,
     cta: 'เลือก Business',
     highlights: ['เชื่อมโดเมนของตนเอง', 'Webhook ส่งออเดอร์เข้าระบบของคุณ', 'Custom Theme สีแบรนด์ของคุณเอง'],
   },
@@ -174,7 +175,7 @@ export function Pricing() {
                 ))}
               </ul>
               <Link
-                href={`/login?mode=signup&plan=${plan.key}`}
+                href={plan.key === 'free' ? '/login?mode=signup' : `/upgrade?plan=${plan.key}&billing=${billing}`}
                 className={`mt-6 text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
                   popular
                     ? 'text-white bg-brand-500 hover:bg-brand-600'

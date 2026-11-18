@@ -102,7 +102,7 @@ export function ThemePicker({
       {locked && (
         <p className="text-xs text-slate-400 flex items-center gap-1.5">
           <Lock className="w-3.5 h-3.5" /> แพ็กเกจ Free ใช้สีมาตรฐาน (Dark/Light) · เลือกชุดสีและฟอนต์ได้ตั้งแต่ Pro ·{' '}
-          <Link href="/pricing" className="text-brand-400 hover:underline">
+          <Link href="/upgrade" className="text-brand-400 hover:underline">
             ดูแพ็กเกจ
           </Link>
         </p>
