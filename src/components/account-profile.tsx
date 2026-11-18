@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Camera, KeyRound, Save, Trash2, UserRound } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { initialOf } from '@/lib/initial';
 
 export type Account = {
   email?: string;
@@ -130,7 +131,7 @@ export function AccountProfile({
             <img src={account.avatar} alt="รูปโปรไฟล์" className="w-16 h-16 rounded-full object-cover border border-slate-700" />
           ) : (
             <div className="w-16 h-16 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xl font-bold text-slate-300">
-              {(account.name || account.email || '?').charAt(0).toUpperCase()}
+              {initialOf(account.name, account.email)}
             </div>
           )}
           <label

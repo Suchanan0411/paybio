@@ -34,10 +34,11 @@ export const PLAN_LIMITS: Record<
 // แพ็กเกจที่ใช้งานได้จริง: แพ็กเกจที่แอดมินให้แบบมีกำหนด (plan_expires_at) หมดอายุแล้วถือเป็น Free
 export function planOf(
   shop: { plan?: string | null; plan_expires_at?: string | null } | null | undefined,
-  now = Date.now()
+  now?: number
 ): Plan {
   const plan = shop?.plan;
   if (plan !== 'pro' && plan !== 'business') return 'free';
-  if (shop?.plan_expires_at && new Date(shop.plan_expires_at).getTime() <= now) return 'free';
+  // อ่านเวลาเฉพาะเมื่อมีวันหมดอายุ (หน้าที่ prerender ได้ เช่น /demo จะไม่แตะ Date.now)
+  if (shop?.plan_expires_at && new Date(shop.plan_expires_at).getTime() <= (now ?? Date.now())) return 'free';
   return plan;
 }

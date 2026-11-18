@@ -40,6 +40,7 @@ import { OrderFulfillmentDialog } from '@/components/order-fulfillment';
 import { FULFILLMENT_LABEL, carrierOf, type Fulfillment } from '@/lib/order-stages';
 import { PLAN_LIMITS, PLAN_NAMES, planOf } from '@/lib/plans';
 import type { SlipCheck } from '@/lib/slip-check';
+import { initialOf } from '@/lib/initial';
 
 function formatBytes(bytes: number) {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toLocaleString('th-TH', { maximumFractionDigits: 1 })} GB`;
@@ -542,7 +543,7 @@ export default function ManageShopPage() {
               <img src={account.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-slate-700" />
             ) : (
               <span className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold uppercase">
-                {(account?.name || account?.email || '?').charAt(0)}
+                {initialOf(account?.name, account?.email)}
               </span>
             )}
             <button

@@ -29,6 +29,7 @@ import { LogoMark } from '@/components/logo';
 import { resolveTheme, themeStyle } from '@/lib/shop-theme';
 import { SHOP_FONT_VARIABLES } from '@/lib/shop-fonts';
 import type { PublicProduct, PublicShop } from '@/lib/shop-data';
+import { initialOf } from '@/lib/initial';
 
 type Step = 'details' | 'pay' | 'done';
 type PlacedOrder = { order_number: string; amount: number; quantity: number; track_token: string | null };
@@ -81,13 +82,18 @@ async function fetchMyOrders(slug: string): Promise<(SavedOrder & { status?: Ord
 // แสดงเฉพาะ 4 หลักท้าย (เลขบัตรประชาชน/เบอร์โทรเป็นข้อมูลส่วนตัวของเจ้าของร้าน)
 const maskPromptpay = (n: string) => `•••• ${n.slice(-4)}`;
 
-// ตัวอักษรแรกของชื่อร้าน (ตัดตาม grapheme เพื่อไม่ให้สระ/วรรณยุกต์ไทยขาด)
-function initial(name: string) {
-  const [first] = new Intl.Segmenter('th', { granularity: 'grapheme' }).segment(name.trim());
-  return (first?.segment ?? '?').toUpperCase();
-}
+const initial = (name: string) => initialOf(name);
 
-export default function ShopFront({ shop, products }: { shop: PublicShop; products: PublicProduct[] }) {
+// demo = ร้านตัวอย่างบนหน้า /demo: ใช้หน้าตาเดียวกับร้านจริง แต่ไม่ส่งคำสั่งซื้อและปิด QR ไม่ให้โอนเงินจริง
+export default function ShopFront({
+  shop,
+  products,
+  demo = false,
+}: {
+  shop: PublicShop;
+  products: PublicProduct[];
+  demo?: boolean;
+}) {
   const [selected, setSelected] = useState<PublicProduct | null>(null);
   const [step, setStep] = useState<Step>('details');
   const [quantity, setQuantity] = useState(1);
@@ -118,8 +124,8 @@ export default function ShopFront({ shop, products }: { shop: PublicShop; produc
   }, [selected, submitting]);
 
   useEffect(() => {
-    fetchMyOrders(shop.slug).then(setMyOrders);
-  }, [shop.slug]);
+    if (!demo) fetchMyOrders(shop.slug).then(setMyOrders);
+  }, [shop.slug, demo]);
 
   // คืนหน่วยความจำของรูปตัวอย่างสลิป
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
@@ -209,6 +215,12 @@ export default function ShopFront({ shop, products }: { shop: PublicShop; produc
 
   const submitOrder = async () => {
     if (!selected) return;
+    if (demo) {
+      // ร้านตัวอย่าง: จำลองผลลัพธ์ ไม่ส่งข้อมูลไปที่เซิร์ฟเวอร์
+      setOrder({ order_number: 'PB-DEMO01', amount: total, quantity, track_token: null });
+      setStep('done');
+      return;
+    }
     if (!file) {
       setError('กรุณาแนบรูปสลิปโอนเงินก่อน');
       return;
@@ -280,6 +292,21 @@ export default function ShopFront({ shop, products }: { shop: PublicShop; produc
             {copied === 'link' ? 'คัดลอกลิงก์แล้ว' : 'แชร์ร้าน'}
           </button>
         </div>
+
+        {demo && (
+          <div className="mt-3 rounded-2xl border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-slate-300 flex items-center gap-3">
+            <span className="flex-1">
+              <span className="font-semibold text-ink block">นี่คือร้านตัวอย่าง</span>
+              ลองกดสั่งซื้อดูได้ ไม่มีการส่งคำสั่งซื้อหรือโอนเงินจริง
+            </span>
+            <Link
+              href="/login?mode=signup"
+              className="shrink-0 text-white px-3 py-2 bg-brand-500 hover:bg-brand-600 rounded-lg font-semibold"
+            >
+              เปิดร้านฟรี
+            </Link>
+          </div>
+        )}
 
         {/* หัวร้าน */}
         <header className="text-center mt-2">
@@ -591,13 +618,20 @@ export default function ShopFront({ shop, products }: { shop: PublicShop; produc
                       className="w-[208px] max-h-80 object-contain"
                     />
                   ) : (
-                    <>
-                      <QRCodeCanvas ref={qrRef} value={qrPayload} size={180} marginSize={1} />
+                    <div className="relative">
+                      <QRCodeCanvas ref={qrRef} value={qrPayload} size={180} marginSize={1} className={demo ? 'blur-[3px] opacity-40' : ''} />
                       <p className="text-gray-600 text-[10px] mt-1 font-mono">พร้อมเพย์ {maskPromptpay(shop.promptpay_number)}</p>
-                    </>
+                      {demo && (
+                        <span className="absolute inset-0 flex items-center justify-center text-center text-xs font-bold text-gray-800 px-6">
+                          QR ตัวอย่าง
+                          <br />
+                          ห้ามโอนเงินจริง
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
-                <div>
+                <div className={demo ? 'hidden' : ''}>
                   <button
                     onClick={downloadQr}
                     className="mt-2 inline-flex items-center gap-1 text-xs text-brand-400 hover:underline cursor-pointer"
@@ -655,7 +689,7 @@ export default function ShopFront({ shop, products }: { shop: PublicShop; produc
                   disabled={submitting}
                   className="text-white mt-4 w-full py-3 bg-brand-500 hover:bg-brand-600 font-semibold rounded-xl text-sm disabled:opacity-50 transition cursor-pointer"
                 >
-                  {submitting ? 'กำลังส่งคำสั่งซื้อ...' : 'ส่งสลิปยืนยันคำสั่งซื้อ'}
+                  {submitting ? 'กำลังส่งคำสั่งซื้อ...' : demo ? 'ลองส่งคำสั่งซื้อ (ตัวอย่าง)' : 'ส่งสลิปยืนยันคำสั่งซื้อ'}
                 </button>
               </div>
             )}
@@ -710,6 +744,16 @@ export default function ShopFront({ shop, products }: { shop: PublicShop; produc
                       {copied === 'track' ? 'คัดลอกลิงก์แล้ว' : 'คัดลอกลิงก์ติดตาม'}
                     </button>
                     <p className="text-[11px] text-slate-500">ดูสถานะได้จากลิงก์นี้ หรือเปิดหน้าร้านนี้อีกครั้งบนเครื่องเดิม</p>
+                  </div>
+                ) : demo ? (
+                  <div className="mt-4 rounded-xl border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-slate-300">
+                    นี่คือสิ่งที่ลูกค้าของคุณจะเห็นหลังส่งสลิป ส่วนร้านจะได้รับแจ้งเตือนพร้อมผลตรวจสลิปทันที
+                    <Link
+                      href="/login?mode=signup"
+                      className="text-white mt-3 w-full inline-flex items-center justify-center py-2.5 bg-brand-500 hover:bg-brand-600 text-sm font-semibold rounded-xl"
+                    >
+                      เปิดร้านของคุณฟรี
+                    </Link>
                   </div>
                 ) : (
                   <p className="text-[11px] text-slate-500 mt-3">เก็บรหัสคำสั่งซื้อไว้สำหรับสอบถามร้านค้า</p>

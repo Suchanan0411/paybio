@@ -33,7 +33,7 @@ const PLANS = [
     monthly: 199,
     yearly: 1990,
     cta: 'เลือก Business',
-    highlights: ['เชื่อมโดเมนของตนเอง', 'ตรวจจับสลิปซ้ำอัตโนมัติ', 'Custom Theme สีแบรนด์ของคุณเอง'],
+    highlights: ['เชื่อมโดเมนของตนเอง', 'Webhook ส่งออเดอร์เข้าระบบของคุณ', 'Custom Theme สีแบรนด์ของคุณเอง'],
   },
 ] as const;
 

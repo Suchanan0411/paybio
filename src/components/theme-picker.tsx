@@ -13,6 +13,7 @@ import {
   type PaletteKey,
 } from '@/lib/shop-theme';
 import { SHOP_FONT_VARIABLES } from '@/lib/shop-fonts';
+import { initialOf } from '@/lib/initial';
 
 type ThemeShop = { shop_name: string; plan?: string | null; theme?: unknown };
 
@@ -77,7 +78,7 @@ export function ThemePicker({
       >
         <div className="flex items-center gap-3">
           <span className="w-11 h-11 rounded-full bg-linear-to-br from-brand-400 to-brand-700 text-white font-bold flex items-center justify-center">
-            {shop.shop_name.trim().charAt(0).toUpperCase()}
+            {initialOf(shop.shop_name)}
           </span>
           <div className="min-w-0">
             <p className="font-bold truncate">{shop.shop_name}</p>
