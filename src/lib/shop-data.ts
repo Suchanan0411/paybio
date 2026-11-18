@@ -15,7 +15,7 @@ export type PublicShop = {
   suspended: boolean;
   closedReason: string | null; // รับออเดอร์ใหม่ไม่ได้ (ครบโควตา/พื้นที่สลิปเต็ม)
 };
-export type PublicProduct = { id: string; name: string; price: number };
+export type PublicProduct = { id: string; name: string; price: number; image_url?: string | null };
 
 // ข้อมูลหน้าร้านที่เปิดเผยต่อสาธารณะ (ไม่ส่ง user_id / เหตุผลการระงับ ไปให้ลูกค้า)
 export const getPublicShop = cache(async (slug: string) => {
@@ -23,7 +23,7 @@ export const getPublicShop = cache(async (slug: string) => {
   if (!shop) return null;
 
   const [{ data: products }, closedReason] = await Promise.all([
-    supabaseAdmin.from('products').select('id, name, price').eq('profile_id', shop.id).order('created_at', { ascending: false }),
+    supabaseAdmin.from('products').select('id, name, price, image_url').eq('profile_id', shop.id).order('created_at', { ascending: false }),
     shop.suspended_at ? null : shopClosedReason(shop),
   ]);
 

@@ -102,6 +102,7 @@ erDiagram
     uuid profile_id FK
     text name
     numeric price
+    text image_url "รูปสินค้า (WebP 800px)"
     timestamptz created_at
   }
 
@@ -311,3 +312,4 @@ node --env-file=.env.local scripts/migrate.mjs supabase/migrations/<ไฟล์
 | `20261018_admin_tools.sql` | สิทธิ์แพ็กเกจมีวันหมดอายุ, ประวัติแอดมิน, ฟังก์ชันรายงานและสลิปน่าสงสัย |
 | `20261118_shop_promptpay_qr.sql` | รูป QR พร้อมเพย์ที่ร้านอัปโหลดเอง (bucket `shop-assets`) |
 | `20261119_order_fulfillment.sql` | ขั้นตอนจัดส่ง เลขพัสดุ ข้อความจากร้าน อีเมลลูกค้า และตาราง `order_events` (ประวัติบนหน้าติดตาม) |
+| `20261120_product_images.sql` | รูปสินค้า (`products.image_url`, WebP ใน bucket `shop-assets`) |

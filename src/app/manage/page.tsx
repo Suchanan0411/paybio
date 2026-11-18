@@ -35,6 +35,7 @@ import { OrderNotifications } from '@/components/order-notifications';
 import { ThemePicker } from '@/components/theme-picker';
 import { PromptpayQrUpload } from '@/components/promptpay-qr-upload';
 import { OrderAlerts } from '@/components/order-alerts';
+import { ProductImagePicker } from '@/components/product-image-picker';
 import { AccountProfile, type Account as AccountInfo } from '@/components/account-profile';
 import { OrderFulfillmentDialog } from '@/components/order-fulfillment';
 import { FULFILLMENT_LABEL, carrierOf, type Fulfillment } from '@/lib/order-stages';
@@ -65,7 +66,7 @@ type Shop = {
   plan_expires_at?: string | null;
   promptpay_qr_url?: string | null;
 };
-type Product = { id: string; name: string; price: number; created_at?: string };
+type Product = { id: string; name: string; price: number; image_url?: string | null; created_at?: string };
 type Order = {
   id: string;
   order_number: string;
@@ -841,7 +842,14 @@ export default function ManageShopPage() {
                     </form>
                   ) : (
                   <div key={item.id} className="py-3 flex justify-between items-center gap-3 text-sm">
-                    <span className="font-medium text-slate-200 truncate">{item.name}</span>
+                    <span className="flex items-center gap-3 min-w-0">
+                      <ProductImagePicker
+                        product={item}
+                        onChange={(next) => setProducts((prev) => prev.map((p) => (p.id === next.id ? next : p)))}
+                        notify={notify}
+                      />
+                      <span className="font-medium text-slate-200 truncate">{item.name}</span>
+                    </span>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="font-bold text-brand-400">{formatBaht(item.price)}</span>
                       <button

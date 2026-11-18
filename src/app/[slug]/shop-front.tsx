@@ -391,11 +391,21 @@ export default function ShopFront({
                     disabled={!!closed}
                     className="w-full text-left bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-brand-500/40 rounded-2xl p-4 flex items-center gap-3 transition cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:border-slate-800"
                   >
-                    <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
-                      <ShoppingBag className="w-5 h-5" />
-                    </span>
+                    {item.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        loading="lazy"
+                        className="w-16 h-16 shrink-0 rounded-xl object-cover border border-slate-800 bg-slate-800"
+                      />
+                    ) : (
+                      <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
+                        <ShoppingBag className="w-5 h-5" />
+                      </span>
+                    )}
                     <span className="flex-1 min-w-0">
-                      <span className="block font-semibold text-sm truncate">{item.name}</span>
+                      <span className="block font-semibold text-sm line-clamp-2 break-words">{item.name}</span>
                       <span className="block text-sm text-brand-400 font-bold mt-0.5">{baht(item.price)}</span>
                     </span>
                     <span className="text-white text-xs font-semibold px-3.5 py-2 rounded-xl bg-brand-500 group-hover:bg-brand-600 group-disabled:bg-slate-700 transition">
@@ -488,6 +498,10 @@ export default function ShopFront({
             {step === 'details' && (
               <form onSubmit={goToPay} className="space-y-4">
                 <div className="bg-slate-800/50 border border-slate-700/60 rounded-xl p-3 flex items-center gap-3">
+                  {selected.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={selected.image_url} alt="" className="w-12 h-12 shrink-0 rounded-lg object-cover bg-slate-800" />
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{selected.name}</p>
                     <p className="text-xs text-slate-400">{baht(selected.price)} / ชิ้น</p>

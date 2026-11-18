@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getCurrentUser, getShopByUserId } from '@/lib/supabase-server';
 import { PLAN_LIMITS, PLAN_NAMES, planOf } from '@/lib/plans';
+import { removeProductImage } from '@/lib/product-image';
 
 async function currentShop() {
   const user = await getCurrentUser();
@@ -107,5 +108,6 @@ export async function DELETE(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: 'ไม่พบสินค้านี้ในร้านของคุณ' }, { status: 404 });
+  await removeProductImage(data.image_url, shop.id);
   return NextResponse.json({ success: true });
 }
