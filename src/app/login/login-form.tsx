@@ -29,6 +29,9 @@ function errorMessage(err: unknown) {
   if (/already registered|already exists/i.test(msg)) return 'อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบ';
   if (/email not confirmed/i.test(msg)) return 'กรุณายืนยันอีเมลจากลิงก์ที่ส่งไปก่อนเข้าสู่ระบบ';
   if (/provider is not enabled/i.test(msg)) return 'ยังไม่ได้เปิดใช้งานการเชื่อมต่อนี้ใน Supabase';
+  const wait = msg.match(/only request this after (\d+) seconds?/i);
+  if (wait) return `ส่งคำขอถี่เกินไป กรุณารอ ${wait[1]} วินาทีแล้วลองใหม่ (ถ้ากดไปแล้ว ลองเช็กอีเมลก่อน)`;
+  if (/email rate limit exceeded/i.test(msg)) return 'ส่งอีเมลเกินจำนวนที่ระบบอนุญาตในชั่วโมงนี้ กรุณาลองใหม่ภายหลัง';
   return msg || 'เกิดข้อผิดพลาด กรุณาลองใหม่';
 }
 
