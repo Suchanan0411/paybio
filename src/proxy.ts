@@ -5,7 +5,22 @@ import { planOf } from '@/lib/plans';
 // โดเมนของตนเอง (Business Studio): shop.example.com/ → แสดงหน้าร้าน /<slug>
 export async function proxy(request: NextRequest) {
   const host = request.headers.get('host') ?? '';
-  if (!host || isAppHost(host)) return NextResponse.next();
+  if (!host || isAppHost(host)) {
+    // ลิงก์ในอีเมลใช้ไม่ได้ (หมดอายุ/ใช้ไปแล้ว): Supabase ส่งกลับมาที่ Site URL พร้อม ?error=...
+    // พาไปหน้าเข้าสู่ระบบพร้อมข้อความภาษาไทย แทนที่จะค้างที่หน้าแรกเฉยๆ
+    const params = request.nextUrl.searchParams;
+    const code = params.get('error_code');
+    if (code || params.get('error_description')) {
+      const message =
+        code === 'otp_expired'
+          ? 'ลิงก์ในอีเมลหมดอายุหรือถูกใช้ไปแล้ว (ถ้าขอลิงก์หลายครั้ง ให้ใช้ลิงก์จากอีเมลฉบับล่าสุด) กรุณาขอลิงก์ใหม่'
+          : `ยืนยันตัวตนไม่สำเร็จ: ${params.get('error_description') ?? code}`;
+      const login = new URL('/login', request.url);
+      login.searchParams.set('error', message);
+      return NextResponse.redirect(login);
+    }
+    return NextResponse.next();
+  }
 
   const domain = host.toLowerCase().replace(/:\d+$/, '');
   const url = new URL('/rest/v1/profiles', process.env.NEXT_PUBLIC_SUPABASE_URL);
