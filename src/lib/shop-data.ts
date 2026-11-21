@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
 import { shopClosedReason } from '@/lib/order-limits';
 import { planOf } from '@/lib/plans';
+import { publicShipping, readShipping, type PublicShipping } from '@/lib/shipping';
 
 export type PublicShop = {
   id: string;
@@ -14,6 +15,7 @@ export type PublicShop = {
   theme: unknown;
   suspended: boolean;
   closedReason: string | null; // รับออเดอร์ใหม่ไม่ได้ (ครบโควตา/พื้นที่สลิปเต็ม)
+  shipping: PublicShipping | null; // null = ร้านไม่คิดค่าส่ง (ไม่ส่งข้อมูลผู้ส่งให้ลูกค้า)
 };
 export type PublicProduct = { id: string; name: string; price: number; image_url?: string | null };
 
@@ -39,6 +41,7 @@ export const getPublicShop = cache(async (slug: string) => {
       theme: shop.theme ?? null,
       suspended: !!shop.suspended_at,
       closedReason,
+      shipping: publicShipping(readShipping(shop.shipping)),
     } satisfies PublicShop,
     products: (products ?? []).map((p) => ({ ...p, price: Number(p.price) })) as PublicProduct[],
   };

@@ -63,9 +63,9 @@ export default function FindOrderPage() {
             required
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value.toUpperCase())}
-            placeholder="PB-123456"
-            pattern="\s*[Pp][Bb]-\d{4,10}\s*"
-            title="เลขคำสั่งซื้อขึ้นต้นด้วย PB- ตามด้วยตัวเลข"
+            placeholder="PB-7K3QX9MD"
+            pattern="\s*[Pp][Bb]-[0-9A-Za-z]{4,10}\s*"
+            title="เลขคำสั่งซื้อขึ้นต้นด้วย PB- ตามด้วยตัวอักษรและตัวเลข"
             className={`${inputClass} font-mono`}
           />
         </div>

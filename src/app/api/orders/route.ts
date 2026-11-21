@@ -8,6 +8,8 @@ import { notifyNewOrder, type NotifyShop } from '@/lib/order-notify';
 import { purgeExpiredSlips, slipQuotaBlocked, slipStorage, trimSlips } from '@/lib/slip-storage';
 import { addOrderEvents } from '@/lib/order-events';
 import { clientIp, rateLimited } from '@/lib/rate-limit';
+import { newOrderNumber } from '@/lib/order-number';
+import { POSTCODE_RE, publicShipping, readShipping, shippingFee } from '@/lib/shipping';
 import { customerEmailConfigured, sendCustomerEmail } from '@/lib/customer-email';
 import {
   EMAIL_RE,
@@ -141,6 +143,7 @@ export async function POST(req: Request) {
     let amount = 0;
     let productId: string | null = null;
     let quantity = 1;
+    let shipInfo: Record<string, unknown> = {};
     const text = (key: string, max: number) => String(formData.get(key) ?? '').trim().slice(0, max);
     const customer = {
       customer_name: text('customer_name', 100),
@@ -165,7 +168,7 @@ export async function POST(req: Request) {
     if (perShop || perIp) {
       return NextResponse.json({ error: 'ส่งคำสั่งซื้อบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่' }, { status: 429 });
     }
-    const orderNumber = `PB-${Date.now().toString().slice(-6)}`;
+    const orderNumber = newOrderNumber();
 
     let shop: (NotifyShop & { promptpay_number: string }) | null = null;
     if (profileId) {
@@ -202,6 +205,29 @@ export async function POST(req: Request) {
       productId = product.id;
       itemTitle = quantity > 1 ? `${product.name} × ${quantity}` : product.name;
       amount = Math.round(Number(product.price) * quantity * 100) / 100;
+
+      // ค่าจัดส่งตามที่ร้านตั้ง คำนวณใหม่ฝั่งเซิร์ฟเวอร์ (ไม่เชื่อยอดจากเบราว์เซอร์)
+      const shippingSettings = publicShipping(readShipping(data.shipping));
+      shipInfo = { subtotal: amount, shipping_fee: 0 };
+      if (shippingSettings) {
+        const method = shippingSettings.methods.find((m) => m.name === text('shipping_method', 40));
+        if (!method) {
+          return NextResponse.json({ error: 'กรุณาเลือกวิธีรับสินค้า (ร้านอาจเพิ่งเปลี่ยนวิธีจัดส่ง)' }, { status: 400 });
+        }
+        const fee = shippingFee(shippingSettings, method, amount, quantity);
+        shipInfo = { ...shipInfo, shipping_fee: fee, shipping_method: method.name, shipping_pickup: method.pickup };
+        if (!method.pickup) {
+          const address = { ship_phone: text('ship_phone', 30), ship_address: text('ship_address', 300), ship_postcode: text('ship_postcode', 5) };
+          if (!address.ship_phone || !address.ship_address) {
+            return NextResponse.json({ error: 'กรุณากรอกเบอร์โทรและที่อยู่จัดส่ง' }, { status: 400 });
+          }
+          if (!POSTCODE_RE.test(address.ship_postcode)) {
+            return NextResponse.json({ error: 'รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก' }, { status: 400 });
+          }
+          shipInfo = { ...shipInfo, ...address };
+        }
+        amount = Math.round((amount + fee) * 100) / 100;
+      }
 
       // แพ็กเกจ Free รับออเดอร์ได้จำกัดต่อเดือน
       if (await monthlyOrdersFull(data)) {
@@ -259,33 +285,32 @@ export async function POST(req: Request) {
       status: 'pending',
       profile_id: profileId,
     };
-    const extra = profileId ? { product_id: productId, quantity, ...customer } : {};
-    let { data: orderData, error: dbError } = await supabaseAdmin
-      .from('orders')
-      .insert({ ...row, ...extra, slip_hash: hash, slip_size: file && file.size > 0 ? file.size : null })
-      .select()
-      .single();
+    const extra = profileId ? { product_id: productId, quantity, ...customer, ...shipInfo } : {};
+    // เลขออเดอร์ชนกับที่มีอยู่ (unique index) = สุ่มใหม่แล้วบันทึกอีกครั้ง
+    const insertOrder = async (payload: Record<string, unknown>) => {
+      for (let attempt = 0; ; attempt++) {
+        const res = await supabaseAdmin.from('orders').insert({ ...payload, order_number: row.order_number }).select().single();
+        if (res.error?.code === '23505' && /order_number/.test(res.error.message) && attempt < 4) {
+          row.order_number = newOrderNumber();
+          continue;
+        }
+        return res;
+      }
+    };
+    let { data: orderData, error: dbError } = await insertOrder({ ...row, ...extra, slip_hash: hash, slip_size: file && file.size > 0 ? file.size : null });
 
     // ฐานข้อมูลยังไม่ได้รัน migration: บันทึกคำสั่งซื้อแบบเดิมไปก่อน โดยเก็บข้อมูลผู้สั่งไว้ในชื่อรายการ
     // ยังไม่ได้รัน migration โควตาสลิป: บันทึกโดยไม่มีขนาดไฟล์
     if (dbError && /slip_size/.test(dbError.message)) {
-      ({ data: orderData, error: dbError } = await supabaseAdmin
-        .from('orders')
-        .insert({ ...row, ...extra, slip_hash: hash })
-        .select()
-        .single());
+      ({ data: orderData, error: dbError } = await insertOrder({ ...row, ...extra, slip_hash: hash }));
     }
     if (dbError && /slip_hash|product_id|quantity|customer_|note/.test(dbError.message)) {
       const fallback = profileId
         ? { ...row, item_title: `${itemTitle} — ${customer.customer_name} (${customer.customer_contact})${customer.note ? ` · ${customer.note}` : ''}` }
         : row;
-      ({ data: orderData, error: dbError } = await supabaseAdmin
-        .from('orders')
-        .insert({ ...fallback, slip_hash: hash })
-        .select()
-        .single());
+      ({ data: orderData, error: dbError } = await insertOrder({ ...fallback, slip_hash: hash }));
       if (dbError && /slip_hash/.test(dbError.message)) {
-        ({ data: orderData, error: dbError } = await supabaseAdmin.from('orders').insert(fallback).select().single());
+        ({ data: orderData, error: dbError } = await insertOrder(fallback));
         slipBytes = null;
       }
     }

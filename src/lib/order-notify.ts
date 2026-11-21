@@ -27,6 +27,11 @@ export type NotifyOrder = {
   customer_name?: string | null;
   customer_contact?: string | null;
   note?: string | null;
+  shipping_method?: string | null;
+  shipping_fee?: number | null;
+  ship_phone?: string | null;
+  ship_address?: string | null;
+  ship_postcode?: string | null;
   slip_url?: string | null;
   status: string;
   created_at: string;
@@ -65,8 +70,12 @@ export function orderLineText(shop: NotifyShop, order: NotifyOrder, check?: Slip
     `ร้าน: ${shop.shop_name}`,
     '',
     `${order.item_title}`,
-    `ยอด ฿${Number(order.amount).toLocaleString('th-TH')}`,
+    `ยอด ฿${Number(order.amount).toLocaleString('th-TH')}${
+      Number(order.shipping_fee) > 0 ? ` (รวมค่าส่ง ฿${Number(order.shipping_fee).toLocaleString('th-TH')})` : ''
+    }`,
+    order.shipping_method && `จัดส่ง: ${order.shipping_method}`,
     order.customer_name && `ลูกค้า: ${order.customer_name}${order.customer_contact ? ` (${order.customer_contact})` : ''}`,
+    order.ship_address && `ที่อยู่: ${order.ship_address} ${order.ship_postcode ?? ''} โทร ${order.ship_phone ?? ''}`.trim(),
     order.note && `หมายเหตุ: ${order.note}`,
     '',
     ...slipSummary(check),
@@ -148,6 +157,15 @@ export async function sendWebhook(
       customer_name: order.customer_name ?? null,
       customer_contact: order.customer_contact ?? null,
       note: order.note ?? null,
+      shipping: order.shipping_method
+        ? {
+            method: order.shipping_method,
+            fee: Number(order.shipping_fee ?? 0),
+            phone: order.ship_phone ?? null,
+            address: order.ship_address ?? null,
+            postcode: order.ship_postcode ?? null,
+          }
+        : null,
       slip_url: await signedSlipUrl(order.slip_url, 7 * 24 * 60 * 60), // ลิงก์ชั่วคราว 7 วัน
       slip_check: check
         ? {

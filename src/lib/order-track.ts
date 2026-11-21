@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase';
 import { planOf } from '@/lib/plans';
+import { ORDER_NUMBER_RE } from '@/lib/order-number';
 import type { Fulfillment, OrderStatus } from '@/lib/order-stages';
 
 export type TrackedOrder = {
@@ -9,6 +10,8 @@ export type TrackedOrder = {
   item_title: string;
   quantity: number;
   amount: number;
+  shipping_method: string | null; // ไม่ส่งที่อยู่จัดส่ง (ลิงก์ติดตามอาจถูกแชร์ต่อ)
+  shipping_fee: number;
   status: OrderStatus;
   fulfillment: Fulfillment | null;
   carrier: string | null;
@@ -28,7 +31,7 @@ export async function getTrackedOrders(tokens: string[]): Promise<TrackedOrder[]
   const { data, error } = await supabaseAdmin
     .from('orders')
     .select(
-      'id, track_token, order_number, item_title, quantity, amount, status, fulfillment, carrier, tracking_number, shop_message, created_at, status_updated_at, profiles(shop_name, slug, plan, plan_expires_at, theme)'
+      'id, track_token, order_number, item_title, quantity, amount, shipping_method, shipping_fee, status, fulfillment, carrier, tracking_number, shop_message, created_at, status_updated_at, profiles(shop_name, slug, plan, plan_expires_at, theme)'
     )
     .in('track_token', valid);
   if (error) {
@@ -47,6 +50,8 @@ export async function getTrackedOrders(tokens: string[]): Promise<TrackedOrder[]
       item_title: o.item_title,
       quantity: o.quantity ?? 1,
       amount: Number(o.amount),
+      shipping_method: o.shipping_method ?? null,
+      shipping_fee: Number(o.shipping_fee ?? 0),
       status: o.status,
       fulfillment: o.fulfillment ?? null,
       carrier: o.carrier ?? null,
@@ -70,7 +75,7 @@ const digits = (s: string) => s.replace(/\D/g, '');
 export async function findOrderTokens(orderNumber: string, contact: string): Promise<string[]> {
   const num = orderNumber.trim().toUpperCase().replace(/\s/g, '');
   const want = norm(contact);
-  if (!/^PB-\d{4,10}$/.test(num) || want.length < 4) return [];
+  if (!ORDER_NUMBER_RE.test(num) || want.length < 4) return [];
   const { data, error } = await supabaseAdmin
     .from('orders')
     .select('track_token, customer_contact, customer_email')

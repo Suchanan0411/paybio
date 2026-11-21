@@ -30,6 +30,7 @@ import { resolveTheme, themeStyle } from '@/lib/shop-theme';
 import { SHOP_FONT_VARIABLES } from '@/lib/shop-fonts';
 import type { PublicProduct, PublicShop } from '@/lib/shop-data';
 import { initialOf } from '@/lib/initial';
+import { POSTCODE_RE, shippingFee } from '@/lib/shipping';
 
 type Step = 'details' | 'pay' | 'done';
 type PlacedOrder = { order_number: string; amount: number; quantity: number; track_token: string | null };
@@ -98,6 +99,8 @@ export default function ShopFront({
   const [step, setStep] = useState<Step>('details');
   const [quantity, setQuantity] = useState(1);
   const [customer, setCustomer] = useState({ name: '', contact: '', email: '', note: '' });
+  const [methodName, setMethodName] = useState('');
+  const [ship, setShip] = useState({ phone: '', address: '', postcode: '' });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -110,7 +113,12 @@ export default function ShopFront({
   const [qrMode, setQrMode] = useState<'shop' | 'auto'>(shop.promptpay_qr_url ? 'shop' : 'auto');
   const useShopQr = qrMode === 'shop' && !!shop.promptpay_qr_url;
 
-  const total = selected ? Math.round(selected.price * quantity * 100) / 100 : 0;
+  const shipping = shop.shipping;
+  const method = shipping?.methods.find((m) => m.name === methodName) ?? null;
+  const needsAddress = !!method && !method.pickup;
+  const subtotal = selected ? Math.round(selected.price * quantity * 100) / 100 : 0;
+  const fee = shipping && method ? shippingFee(shipping, method, subtotal, quantity) : 0;
+  const total = Math.round((subtotal + fee) * 100) / 100;
   const qrPayload = selected ? generatePayload(shop.promptpay_number, { amount: total }) : '';
 
   // ปิดหน้าต่างด้วยปุ่ม Esc
@@ -136,7 +144,7 @@ export default function ShopFront({
   };
 
   const openCheckout = (product: PublicProduct) => {
-    let saved = { name: '', contact: '', email: '' };
+    let saved = { name: '', contact: '', email: '', phone: '', address: '', postcode: '' };
     try {
       saved = { ...saved, ...JSON.parse(localStorage.getItem(CONTACT_KEY) ?? '{}') };
     } catch {
@@ -146,6 +154,8 @@ export default function ShopFront({
     setStep('details');
     setQuantity(1);
     setCustomer({ name: saved.name, contact: saved.contact, email: saved.email ?? '', note: '' });
+    setShip({ phone: saved.phone ?? '', address: saved.address ?? '', postcode: saved.postcode ?? '' });
+    if (!shop.shipping?.methods.some((m) => m.name === methodName)) setMethodName(shop.shipping?.methods[0]?.name ?? '');
     setFile(null);
     setPreview(null);
     setError(null);
@@ -204,8 +214,15 @@ export default function ShopFront({
 
   const goToPay = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (needsAddress && !POSTCODE_RE.test(ship.postcode.trim())) {
+      setError('รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก');
+      return;
+    }
     try {
-      localStorage.setItem(CONTACT_KEY, JSON.stringify({ name: customer.name, contact: customer.contact, email: customer.email }));
+      localStorage.setItem(
+        CONTACT_KEY,
+        JSON.stringify({ name: customer.name, contact: customer.contact, email: customer.email, ...(needsAddress ? ship : {}) })
+      );
     } catch {
       // บันทึกไม่ได้ก็ไม่เป็นไร
     }
@@ -237,6 +254,14 @@ export default function ShopFront({
       fd.append('customer_contact', customer.contact);
       fd.append('note', customer.note);
       fd.append('customer_email', customer.email);
+      if (method) {
+        fd.append('shipping_method', method.name);
+        if (needsAddress) {
+          fd.append('ship_phone', ship.phone);
+          fd.append('ship_address', ship.address);
+          fd.append('ship_postcode', ship.postcode);
+        }
+      }
 
       const res = await fetch('/api/orders', { method: 'POST', body: fd });
       const data = await res.json();
@@ -572,13 +597,111 @@ export default function ShopFront({
                     className={inputClass}
                   />
                 </div>
+                {shipping && (
+                  <fieldset>
+                    <legend className="text-xs text-slate-400 mb-1.5">วิธีรับสินค้า</legend>
+                    <div className="space-y-1.5">
+                      {shipping.methods.map((m) => {
+                        const mFee = shippingFee(shipping, m, subtotal, quantity);
+                        return (
+                          <label
+                            key={m.name}
+                            className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm cursor-pointer transition ${
+                              methodName === m.name ? 'border-brand-500 bg-brand-500/10' : 'border-slate-700 hover:border-slate-600'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="shipping-method"
+                              required
+                              checked={methodName === m.name}
+                              onChange={() => setMethodName(m.name)}
+                              className="accent-brand-500"
+                            />
+                            <span className="flex-1">{m.name}</span>
+                            <span className={`text-xs font-semibold ${mFee === 0 ? 'text-brand-400' : 'text-slate-300'}`}>
+                              {m.pickup ? 'ไม่มีค่าส่ง' : mFee === 0 ? 'ส่งฟรี' : `+${baht(mFee)}`}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {(shipping.free_over != null || shipping.extra_per_item > 0) && (
+                      <p className="text-[11px] text-slate-500 mt-1.5">
+                        {[
+                          shipping.extra_per_item > 0 && `ชิ้นถัดไปบวกค่าส่งชิ้นละ ${baht(shipping.extra_per_item)}`,
+                          shipping.free_over != null &&
+                            (subtotal >= shipping.free_over
+                              ? `ซื้อครบ ${baht(shipping.free_over)} ส่งฟรีแล้ว`
+                              : `ซื้อเพิ่มอีก ${baht(shipping.free_over - subtotal)} ส่งฟรี`),
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                    )}
+                  </fieldset>
+                )}
+
+                {needsAddress && (
+                  <div className="space-y-3 rounded-xl border border-slate-800 p-3">
+                    <p className="text-xs font-medium text-slate-300">ที่อยู่จัดส่ง (ผู้รับ: {customer.name || 'ชื่อผู้สั่งซื้อ'})</p>
+                    <div>
+                      <label htmlFor="s-phone" className="text-xs text-slate-400 block mb-1">
+                        เบอร์โทรผู้รับ
+                      </label>
+                      <input
+                        id="s-phone"
+                        required
+                        type="tel"
+                        inputMode="tel"
+                        maxLength={30}
+                        autoComplete="tel"
+                        value={ship.phone}
+                        onChange={(e) => setShip((s) => ({ ...s, phone: e.target.value }))}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="s-address" className="text-xs text-slate-400 block mb-1">
+                        บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด
+                      </label>
+                      <textarea
+                        id="s-address"
+                        required
+                        rows={3}
+                        maxLength={300}
+                        autoComplete="street-address"
+                        value={ship.address}
+                        onChange={(e) => setShip((s) => ({ ...s, address: e.target.value }))}
+                        className={`${inputClass} resize-none`}
+                      />
+                    </div>
+                    <div className="w-32">
+                      <label htmlFor="s-postcode" className="text-xs text-slate-400 block mb-1">
+                        รหัสไปรษณีย์
+                      </label>
+                      <input
+                        id="s-postcode"
+                        required
+                        inputMode="numeric"
+                        maxLength={5}
+                        pattern="\d{5}"
+                        autoComplete="postal-code"
+                        value={ship.postcode}
+                        onChange={(e) => setShip((s) => ({ ...s, postcode: e.target.value.replace(/\D/g, '') }))}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label htmlFor="c-note" className="text-xs text-slate-400 block mb-1">
-                    ที่อยู่จัดส่ง / หมายเหตุ <span className="text-slate-500">(ไม่บังคับ)</span>
+                    {shipping ? 'หมายเหตุถึงร้าน' : 'ที่อยู่จัดส่ง / หมายเหตุ'} <span className="text-slate-500">(ไม่บังคับ)</span>
                   </label>
                   <textarea
                     id="c-note"
-                    rows={3}
+                    rows={shipping ? 2 : 3}
                     maxLength={500}
                     value={customer.note}
                     onChange={(e) => setCustomer((c) => ({ ...c, note: e.target.value }))}
@@ -586,10 +709,25 @@ export default function ShopFront({
                   />
                 </div>
 
-                <div className="flex items-center justify-between border-t border-slate-800 pt-4">
-                  <span className="text-sm text-slate-400">ยอดชำระ</span>
-                  <span className="text-xl font-bold text-brand-400">{baht(total)}</span>
+                <div className="border-t border-slate-800 pt-4 space-y-1">
+                  {shipping && (
+                    <>
+                      <div className="flex justify-between text-xs text-slate-400">
+                        <span>ค่าสินค้า</span>
+                        <span>{baht(subtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-slate-400">
+                        <span>ค่าจัดส่ง{method ? ` (${method.name})` : ''}</span>
+                        <span>{fee === 0 ? 'ฟรี' : baht(fee)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-400">ยอดชำระ</span>
+                    <span className="text-xl font-bold text-brand-400">{baht(total)}</span>
+                  </div>
                 </div>
+                {error && <p className="text-xs text-rose-400">{error}</p>}
                 <button
                   type="submit"
                   className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 font-semibold rounded-xl text-sm transition cursor-pointer"
@@ -603,6 +741,7 @@ export default function ShopFront({
               <div className="text-center">
                 <p className="text-xs text-slate-400">
                   {selected.name} × {quantity}
+                  {method && ` · ${method.name}${fee > 0 ? ` (ค่าส่ง ${baht(fee)})` : ''}`}
                 </p>
                 <p className="text-3xl font-bold text-brand-400 mt-1">{baht(total)}</p>
 
@@ -734,6 +873,14 @@ export default function ShopFront({
                       {selected.name} × {order.quantity}
                     </span>
                   </div>
+                  {method && (
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-400">การจัดส่ง</span>
+                      <span className="text-right">
+                        {method.name} · {fee === 0 ? 'ไม่มีค่าส่ง' : baht(fee)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-slate-400">ยอดชำระ</span>
                     <span className="font-semibold text-brand-400">{baht(order.amount)}</span>

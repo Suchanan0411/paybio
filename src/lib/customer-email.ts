@@ -6,6 +6,8 @@ export type EmailOrder = {
   order_number: string;
   item_title: string;
   amount: number;
+  shipping_method?: string | null;
+  shipping_fee?: number | null;
   status: OrderStatus;
   fulfillment: Fulfillment | null;
   carrier: string | null;
@@ -31,6 +33,9 @@ function render(shopName: string, order: EmailOrder, headline: string) {
   const rows: [string, string][] = [
     ['รหัสคำสั่งซื้อ', order.order_number],
     ['สินค้า', order.item_title],
+    ...(order.shipping_method
+      ? ([['การจัดส่ง', `${order.shipping_method} · ${Number(order.shipping_fee) > 0 ? `฿${Number(order.shipping_fee).toLocaleString('th-TH')}` : 'ฟรี'}`]] as [string, string][])
+      : []),
     ['ยอดชำระ', `฿${Number(order.amount).toLocaleString('th-TH')}`],
     ['สถานะ', customerStatusLabel(order.status, order.fulfillment)],
   ];

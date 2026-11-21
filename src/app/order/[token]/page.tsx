@@ -159,6 +159,14 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
             <span className="text-slate-400 shrink-0">สินค้า</span>
             <span className="text-right">{order.item_title}</span>
           </div>
+          {order.shipping_method && (
+            <div className="flex justify-between gap-3">
+              <span className="text-slate-400 shrink-0">การจัดส่ง</span>
+              <span className="text-right">
+                {order.shipping_method} · {order.shipping_fee > 0 ? baht(order.shipping_fee) : 'ฟรี'}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-slate-400">ยอดชำระ</span>
             <span className="font-semibold text-brand-400">{baht(order.amount)}</span>

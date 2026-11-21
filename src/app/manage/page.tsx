@@ -38,6 +38,8 @@ import { OrderAlerts } from '@/components/order-alerts';
 import { ProductImagePicker } from '@/components/product-image-picker';
 import { AccountProfile, type Account as AccountInfo } from '@/components/account-profile';
 import { OrderFulfillmentDialog } from '@/components/order-fulfillment';
+import { ShippingSettings } from '@/components/shipping-settings';
+import { BulkShipDialog } from '@/components/bulk-ship';
 import { FULFILLMENT_LABEL, carrierOf, type Fulfillment } from '@/lib/order-stages';
 import { PLAN_LIMITS, PLAN_NAMES, planOf } from '@/lib/plans';
 import type { SlipCheck } from '@/lib/slip-check';
@@ -65,6 +67,7 @@ type Shop = {
   theme?: unknown;
   plan_expires_at?: string | null;
   promptpay_qr_url?: string | null;
+  shipping?: unknown;
 };
 type Product = { id: string; name: string; price: number; image_url?: string | null; created_at?: string };
 type Order = {
@@ -87,7 +90,18 @@ type Order = {
   shop_message?: string | null;
   customer_email?: string | null;
   track_token?: string | null;
+  subtotal?: number | null;
+  shipping_fee?: number | null;
+  shipping_method?: string | null;
+  shipping_pickup?: boolean | null;
+  ship_phone?: string | null;
+  ship_address?: string | null;
+  ship_postcode?: string | null;
 };
+type OrderFilter = 'all' | 'toship' | OrderStatus;
+// จ่ายแล้วแต่ยังไม่ได้ส่ง (ไม่รวมรับเองที่ร้าน)
+const isToShip = (o: Order) =>
+  o.status === 'paid' && !o.shipping_pickup && o.fulfillment !== 'shipped' && o.fulfillment !== 'delivered';
 type SlipStorage = { used: number; limit: number; retentionDays: number | null };
 type Account = AccountInfo;
 type Tab = 'overview' | 'orders' | 'products' | 'settings';
@@ -169,7 +183,9 @@ export default function ManageShopPage() {
   const [savingDomain, setSavingDomain] = useState(false);
   const [appHost, setAppHost] = useState('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [orderFilter, setOrderFilter] = useState<'all' | OrderStatus>('all');
+  const [orderFilter, setOrderFilter] = useState<OrderFilter>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkShip, setBulkShip] = useState(false);
   const [fulfillOrder, setFulfillOrder] = useState<Order | null>(null);
   const [customerEmail, setCustomerEmail] = useState(false);
 
@@ -398,7 +414,20 @@ export default function ManageShopPage() {
 
   const paidTotal = orders.filter((o) => o.status === 'paid').reduce((sum, o) => sum + Number(o.amount), 0);
   const pendingOrders = orders.filter((o) => o.status === 'pending');
-  const visibleOrders = orderFilter === 'all' ? orders : orders.filter((o) => o.status === orderFilter);
+  const toShipOrders = orders.filter(isToShip);
+  const visibleOrders =
+    orderFilter === 'all' ? orders : orderFilter === 'toship' ? toShipOrders : orders.filter((o) => o.status === orderFilter);
+  const selectable = orderFilter === 'toship';
+  const selectedOrders = visibleOrders.filter((o) => selectedIds.has(o.id));
+  const toggleSelected = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const printLabels = (size: 'a4' | 'thermal') =>
+    window.open(`/manage/labels?size=${size}&ids=${selectedOrders.map((o) => o.id).join(',')}`, '_blank');
   const shopUrl = `paybio.me/${shop.slug}`;
   const plan = planOf(shop);
   const limits = PLAN_LIMITS[plan];
@@ -446,7 +475,17 @@ export default function ManageShopPage() {
 
   const orderRow = (order: Order) => (
     <div key={order.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-slate-800/30 transition">
-      <div className="min-w-0">
+      <div className="min-w-0 flex gap-3">
+        {selectable && (
+          <input
+            type="checkbox"
+            aria-label={`เลือก ${order.order_number}`}
+            checked={selectedIds.has(order.id)}
+            onChange={() => toggleSelected(order.id)}
+            className="mt-0.5 w-4 h-4 shrink-0 accent-brand-500 cursor-pointer"
+          />
+        )}
+        <div className="min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-mono font-semibold text-ink">{order.order_number}</span>
           <span className={`px-2 py-0.5 rounded-full border text-[10px] ${STATUS_STYLE[order.status] ?? STATUS_STYLE.pending}`}>
@@ -470,8 +509,20 @@ export default function ManageShopPage() {
             {order.customer_contact && <span className="text-slate-500"> · {order.customer_contact}</span>}
           </p>
         )}
+        {order.shipping_method && (
+          <p className="text-slate-400 mt-0.5">
+            <Truck className="w-3 h-3 inline -mt-0.5" /> {order.shipping_method}
+            {Number(order.shipping_fee) > 0 && <span className="text-slate-500"> · ค่าส่ง {formatBaht(Number(order.shipping_fee))}</span>}
+          </p>
+        )}
+        {order.ship_address && (
+          <p className="text-slate-500 mt-0.5 whitespace-pre-line break-words">
+            {order.ship_address} {order.ship_postcode} · โทร {order.ship_phone}
+          </p>
+        )}
         {order.note && <p className="text-slate-500 mt-0.5 whitespace-pre-line break-words">{order.note}</p>}
         <span className="text-[10px] text-slate-500">{formatDate(order.created_at)}</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap sm:justify-end">
@@ -690,17 +741,20 @@ export default function ManageShopPage() {
           <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-slate-800 flex flex-wrap gap-2 justify-between items-center">
               <div className="flex flex-wrap gap-1.5">
-                {(['all', 'pending', 'paid', 'rejected'] as const).map((key) => (
+                {(['all', 'pending', 'toship', 'paid', 'rejected'] as const).map((key) => (
                   <button
                     key={key}
-                    onClick={() => setOrderFilter(key)}
+                    onClick={() => {
+                      setOrderFilter(key);
+                      setSelectedIds(new Set());
+                    }}
                     className={`text-xs px-3 py-1.5 rounded-lg border transition cursor-pointer ${
                       orderFilter === key
                         ? 'bg-brand-500 border-brand-500 text-white'
                         : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
                     }`}
                   >
-                    {key === 'all' ? 'ทั้งหมด' : STATUS_LABEL[key]}
+                    {key === 'all' ? 'ทั้งหมด' : key === 'toship' ? `รอจัดส่ง (${toShipOrders.length})` : STATUS_LABEL[key]}
                   </button>
                 ))}
               </div>
@@ -743,9 +797,47 @@ export default function ManageShopPage() {
                 </Link>
               )}
             </div>
+            {selectable && visibleOrders.length > 0 && (
+              <div className="px-4 py-3 border-b border-slate-800 flex flex-wrap items-center gap-2 text-xs bg-slate-950/40">
+                <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrders.length === visibleOrders.length}
+                    onChange={(e) => setSelectedIds(e.target.checked ? new Set(visibleOrders.map((o) => o.id)) : new Set())}
+                    className="w-4 h-4 accent-brand-500"
+                  />
+                  เลือกทั้งหมด ({selectedOrders.length}/{visibleOrders.length})
+                </label>
+                <div className="flex flex-wrap gap-2 ml-auto">
+                  <button
+                    disabled={!selectedOrders.length}
+                    onClick={() => printLabels('a4')}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-40 cursor-pointer"
+                  >
+                    พิมพ์ใบจ่าหน้า A4
+                  </button>
+                  <button
+                    disabled={!selectedOrders.length}
+                    onClick={() => printLabels('thermal')}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-40 cursor-pointer"
+                  >
+                    พิมพ์ 100×150 มม.
+                  </button>
+                  <button
+                    disabled={!selectedOrders.length}
+                    onClick={() => setBulkShip(true)}
+                    className="text-white px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 font-semibold disabled:opacity-40 cursor-pointer"
+                  >
+                    ใส่เลขพัสดุ
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="divide-y divide-slate-800">
               {visibleOrders.length === 0 ? (
-                <p className="p-6 text-center text-slate-500 text-xs">ยังไม่มีคำสั่งซื้อ</p>
+                <p className="p-6 text-center text-slate-500 text-xs">
+                  {orderFilter === 'toship' ? 'ไม่มีออเดอร์ที่รอจัดส่ง' : 'ยังไม่มีคำสั่งซื้อ'}
+                </p>
               ) : (
                 visibleOrders.map(orderRow)
               )}
@@ -953,6 +1045,12 @@ export default function ManageShopPage() {
             </form>
           </div>
 
+          <ShippingSettings
+            shop={shop}
+            onShopChange={(next) => setShop((prev) => prev && { ...prev, ...next })}
+            notify={notify}
+          />
+
           <PromptpayQrUpload
             url={shop.promptpay_qr_url}
             onChange={(promptpay_qr_url) => setShop((prev) => prev && { ...prev, promptpay_qr_url })}
@@ -1020,6 +1118,19 @@ export default function ManageShopPage() {
           emailEnabled={customerEmail}
           onClose={() => setFulfillOrder(null)}
           onSaved={(saved) => setOrders((prev) => prev.map((o) => (o.id === saved.id ? saved : o)))}
+          notify={notify}
+        />
+      )}
+
+      {bulkShip && (
+        <BulkShipDialog
+          orders={selectedOrders}
+          onClose={() => setBulkShip(false)}
+          onSaved={(saved) => {
+            const byId = new Map(saved.map((o) => [o.id, o]));
+            setOrders((prev) => prev.map((o) => byId.get(o.id) ?? o));
+            setSelectedIds(new Set());
+          }}
           notify={notify}
         />
       )}

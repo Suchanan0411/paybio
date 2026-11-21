@@ -19,6 +19,15 @@ const SHOP: PublicShop = {
   theme: { palette: 'orange', font: 'prompt' },
   suspended: false,
   closedReason: null,
+  shipping: {
+    methods: [
+      { id: 'm1', name: 'ส่งธรรมดา', fee: 40, pickup: false },
+      { id: 'm2', name: 'ส่งด่วน (Lalamove)', fee: 90, pickup: false },
+      { id: 'm3', name: 'รับเองที่ร้าน', fee: 0, pickup: true },
+    ],
+    extra_per_item: 10,
+    free_over: 500,
+  },
 };
 
 const PRODUCTS: PublicProduct[] = [
