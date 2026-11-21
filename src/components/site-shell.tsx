@@ -27,7 +27,7 @@ export function SiteHeader() {
         </Link>
         <Link
           href="/login?mode=signup"
-          className="text-white px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 rounded-lg font-semibold transition"
+          className="text-white px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
         >
           สมัครฟรี
         </Link>
@@ -47,7 +47,7 @@ export function LegalPage({
   sections: { heading: string; body: (string | string[])[] }[];
 }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-ink flex flex-col">
+    <div className="min-h-screen text-ink flex flex-col">
       <SiteHeader />
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 pt-8 pb-20">
         <h1 className="text-3xl font-bold">{title}</h1>

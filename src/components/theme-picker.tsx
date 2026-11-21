@@ -65,7 +65,7 @@ export function ThemePicker({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+    <div className="glass p-5 rounded-2xl space-y-4">
       <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
         <Palette className="w-4 h-4 text-brand-400" /> ธีมหน้าร้าน
       </div>
@@ -87,7 +87,7 @@ export function ThemePicker({
             </span>
           </div>
         </div>
-        <div className="mt-3 bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center gap-3">
+        <div className="mt-3 glass rounded-xl p-3 flex items-center gap-3">
           <span className="w-9 h-9 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
             <ShoppingBag className="w-4 h-4" />
           </span>
@@ -206,7 +206,7 @@ export function ThemePicker({
           type="button"
           onClick={save}
           disabled={locked || saving || !dirty || (useCustom && level === 'custom' && !customValid)}
-          className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-xs font-semibold rounded-xl transition cursor-pointer disabled:cursor-not-allowed"
+          className="text-white w-full py-2.5 btn-primary disabled:opacity-50 text-xs font-semibold rounded-xl transition cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? 'กำลังบันทึก...' : dirty ? 'บันทึกธีม' : 'บันทึกแล้ว'}
         </button>

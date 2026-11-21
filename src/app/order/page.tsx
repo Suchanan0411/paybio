@@ -37,11 +37,11 @@ export default function FindOrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4">
       <Link href="/" aria-label="PayBio หน้าแรก" className="mb-6">
         <Logo />
       </Link>
-      <form onSubmit={submit} className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-4">
+      <form onSubmit={submit} className="w-full max-w-md glass rounded-2xl p-6 sm:p-8 shadow-2xl space-y-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold">ค้นหาคำสั่งซื้อ</h1>
           <p className="text-sm text-slate-400 mt-1">ดูสถานะคำสั่งซื้อและเลขพัสดุ ใช้ข้อมูลเดียวกับที่กรอกตอนสั่งซื้อ</p>
@@ -86,7 +86,7 @@ export default function FindOrderPage() {
         <button
           type="submit"
           disabled={loading}
-          className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+          className="text-white w-full py-3 btn-primary disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
         >
           <Search className="w-4 h-4" /> {loading ? 'กำลังค้นหา...' : 'ค้นหา'}
         </button>

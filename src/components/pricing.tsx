@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 import { PLAN_PRICES } from '@/lib/plans';
+import { LiquidIndicator } from '@/components/liquid-indicator';
 
 type Billing = 'monthly' | 'yearly';
 
@@ -111,7 +112,8 @@ export function Pricing() {
   return (
     <div>
       <div className="flex justify-center mb-8">
-        <div role="tablist" className="inline-flex p-1 bg-slate-900 border border-slate-800 rounded-xl text-sm">
+        <div role="tablist" className="liquid-host inline-flex p-1 glass rounded-xl text-sm">
+          <LiquidIndicator active={billing} />
           {(
             [
               ['monthly', 'รายเดือน'],
@@ -122,9 +124,10 @@ export function Pricing() {
               key={key}
               role="tab"
               aria-selected={billing === key}
+              data-active={billing === key}
               onClick={() => setBilling(key)}
-              className={`px-4 py-1.5 rounded-lg font-medium transition cursor-pointer ${
-                billing === key ? 'bg-brand-500 text-white' : 'text-slate-400 hover:text-ink'
+              className={`px-4 py-1.5 rounded-lg font-medium transition-colors duration-300 cursor-pointer ${
+                billing === key ? 'text-white' : 'text-slate-400 hover:text-ink'
               }`}
             >
               {label}
@@ -146,7 +149,7 @@ export function Pricing() {
             <div
               key={plan.key}
               className={`relative flex flex-col rounded-2xl p-6 border ${
-                popular ? 'bg-brand-500/10 border-brand-500/50' : 'bg-slate-900 border-slate-800'
+                popular ? 'bg-brand-500/10 border-brand-500/50' : 'glass'
               }`}
             >
               {popular && (
@@ -178,7 +181,7 @@ export function Pricing() {
                 href={plan.key === 'free' ? '/login?mode=signup' : `/upgrade?plan=${plan.key}&billing=${billing}`}
                 className={`mt-6 text-center px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
                   popular
-                    ? 'text-white bg-brand-500 hover:bg-brand-600'
+                    ? 'text-white btn-primary'
                     : 'bg-slate-800 hover:bg-slate-700 text-ink'
                 }`}
               >

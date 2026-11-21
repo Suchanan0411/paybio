@@ -11,6 +11,7 @@ import {
   LineIcon,
 } from '@/components/onboarding';
 import { Logo } from '@/components/logo';
+import { LiquidIndicator } from '@/components/liquid-indicator';
 
 type Mode = 'signup' | 'login';
 type Provider = 'google' | 'line';
@@ -160,11 +161,11 @@ export default function LoginForm() {
 
   if (forgot) {
     return (
-      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4">
         <Link href="/" aria-label="PayBio หน้าแรก" className="mb-6">
           <Logo />
         </Link>
-        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+        <div className="w-full max-w-md glass rounded-2xl p-6 sm:p-8 shadow-2xl">
           {resetSentTo ? (
             <div className="text-center">
               <div className="w-14 h-14 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -206,7 +207,7 @@ export default function LoginForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-brand-500/20"
+                className="text-white w-full py-3 btn-primary disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-brand-500/20"
               >
                 {loading ? 'กำลังส่ง...' : 'ส่งลิงก์ตั้งรหัสผ่านใหม่'}
               </button>
@@ -230,8 +231,8 @@ export default function LoginForm() {
 
   if (sentTo) {
     return (
-      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center">
+      <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md glass rounded-2xl p-8 shadow-2xl text-center">
           <div className="w-14 h-14 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <MailCheck className="w-7 h-7 text-brand-400" />
           </div>
@@ -256,12 +257,12 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4">
       <Link href="/" aria-label="PayBio หน้าแรก" className="mb-6">
           <Logo />
         </Link>
 
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div className="w-full max-w-md glass rounded-2xl p-6 sm:p-8 shadow-2xl">
         {isSignUp && <OnboardingSteps current={0} />}
 
         <div className="text-center mb-6">
@@ -274,14 +275,16 @@ export default function LoginForm() {
         </div>
 
         {/* สลับ สมัครสมาชิก / เข้าสู่ระบบ */}
-        <div className="grid grid-cols-2 gap-1 p-1 bg-slate-800/60 rounded-xl mb-6 text-sm">
+        <div className="liquid-host grid grid-cols-2 gap-1 p-1 bg-slate-800/60 rounded-xl mb-6 text-sm">
+          <LiquidIndicator active={mode} variant="clear" />
           {(['signup', 'login'] as const).map((m) => (
             <button
               key={m}
               type="button"
+              data-active={mode === m}
               onClick={() => switchMode(m)}
-              className={`py-2 rounded-lg font-medium transition cursor-pointer ${
-                mode === m ? 'bg-slate-950 text-ink shadow' : 'text-slate-400 hover:text-ink'
+              className={`py-2 rounded-lg font-medium transition-colors duration-300 cursor-pointer ${
+                mode === m ? 'text-ink' : 'text-slate-400 hover:text-ink'
               }`}
             >
               {m === 'signup' ? 'สร้างบัญชีใหม่' : 'เข้าสู่ระบบ'}
@@ -326,7 +329,7 @@ export default function LoginForm() {
 
             <div className="relative flex items-center justify-center py-2">
               <div className="border-t border-slate-800 w-full" />
-              <span className="bg-slate-900 px-3 text-xs text-slate-500 whitespace-nowrap">หรือ</span>
+              <span className="px-3 text-xs text-slate-500 whitespace-nowrap">หรือ</span>
               <div className="border-t border-slate-800 w-full" />
             </div>
 
@@ -336,7 +339,7 @@ export default function LoginForm() {
                 setShowEmailForm(true);
                 setErrorMsg('');
               }}
-              className="text-white w-full flex items-center justify-center gap-2 py-3 bg-brand-500 hover:bg-brand-600 font-semibold rounded-xl text-sm transition cursor-pointer shadow-lg shadow-brand-500/20"
+              className="text-white w-full flex items-center justify-center gap-2 py-3 btn-primary font-semibold rounded-xl text-sm transition cursor-pointer shadow-lg shadow-brand-500/20"
             >
               <Mail className="w-4 h-4" />
               {isSignUp ? 'สร้างบัญชีด้วยอีเมล' : 'เข้าสู่ระบบด้วยอีเมล'}
@@ -425,7 +428,7 @@ export default function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-brand-500/20"
+              className="text-white w-full py-3 btn-primary disabled:opacity-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-brand-500/20"
             >
               {loading ? 'กำลังดำเนินการ...' : isSignUp ? 'สร้างบัญชีและไปต่อ' : 'เข้าสู่ระบบ'}
               {!loading && <ArrowRight className="w-4 h-4" />}

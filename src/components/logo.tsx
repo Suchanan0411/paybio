@@ -15,16 +15,16 @@ export function LogoMark(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-// โลโก้เต็ม: สัญลักษณ์ + ตัวอักษร PayBio (สีตามต้นฉบับ — โหมดมืดวางบนกรอบขาวให้ Pay สีดำยังมองเห็น)
+// โลโก้เต็ม: สัญลักษณ์ + ตัวอักษร PayBio (สีตามต้นฉบับ — โหมดมืดใช้ตัวอักษรสีอ่อนแทน)
 export function Logo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const mark = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
   const text = size === 'sm' ? 'text-2xl' : 'text-3xl';
   return (
-    <span className="inline-flex items-center gap-2 dark:bg-white dark:px-3 dark:py-1.5 dark:rounded-xl">
+    <span className="inline-flex items-center gap-2">
       <LogoMark className={`${mark} shrink-0`} />
       <span className={`${text} font-display font-bold tracking-tight leading-none`}>
-        <span className="text-[#0b172f]">Pay</span>
-        <span className="text-[#1e4fd8]">Bio</span>
+        <span className="text-[#0b172f] dark:text-[#eef2fa]">Pay</span>
+        <span className="text-[#1e4fd8] dark:text-[#7ea6fb]">Bio</span>
       </span>
     </span>
   );

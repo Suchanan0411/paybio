@@ -31,7 +31,7 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-ink">
+    <div className="min-h-screen text-ink">
       <header className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" aria-label="PayBio หน้าแรก">
           <Logo size="sm" />
@@ -45,7 +45,7 @@ export default function Home() {
           </Link>
           <Link
             href="/login?mode=signup"
-            className="text-white px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 rounded-lg font-semibold transition"
+            className="text-white px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
           >
             สมัครฟรี
           </Link>
@@ -68,13 +68,13 @@ export default function Home() {
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/login?mode=signup"
-              className="text-white inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-500 hover:bg-brand-600 rounded-xl font-semibold shadow-lg shadow-brand-500/20 transition"
+              className="text-white inline-flex items-center justify-center gap-2 px-6 py-3 btn-primary rounded-xl font-semibold shadow-lg shadow-brand-500/20 transition"
             >
               เริ่มต้นสร้างร้านค้า <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center px-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl font-medium text-slate-300 transition"
+              className="inline-flex items-center justify-center px-6 py-3 glass hover:bg-slate-800 rounded-xl font-medium text-slate-300 transition"
             >
               ดูร้านตัวอย่าง
             </Link>
@@ -91,7 +91,7 @@ export default function Home() {
           <h2 className="text-center text-2xl font-bold mb-8">เริ่มขายได้ใน 3 ขั้นตอน</h2>
           <ol className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {STEPS.map(({ Icon, title, text }, i) => (
-              <li key={title} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <li key={title} className="glass rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
                     <Icon className="w-4.5 h-4.5 text-brand-400" />
@@ -127,7 +127,7 @@ export default function Home() {
             <p className="text-slate-300 mt-2">เริ่มต้นฟรีตลอดชีพ ไม่หักค่าคอมมิชชัน</p>
             <Link
               href="/login?mode=signup"
-              className="text-white mt-6 inline-flex items-center gap-2 px-6 py-3 bg-brand-500 hover:bg-brand-600 rounded-xl font-semibold transition"
+              className="text-white mt-6 inline-flex items-center gap-2 px-6 py-3 btn-primary rounded-xl font-semibold transition"
             >
               สร้างบัญชีฟรี <ArrowRight className="w-4 h-4" />
             </Link>

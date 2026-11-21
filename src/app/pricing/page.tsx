@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-ink">
+    <div className="min-h-screen text-ink">
       <header className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" aria-label="PayBio หน้าแรก">
           <Logo size="sm" />
@@ -22,7 +22,7 @@ export default function PricingPage() {
           </Link>
           <Link
             href="/login?mode=signup"
-            className="text-white px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 rounded-lg font-semibold transition"
+            className="text-white px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
           >
             สมัครฟรี
           </Link>

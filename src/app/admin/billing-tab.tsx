@@ -138,7 +138,7 @@ export function BillingTab({ onPreview }: { onPreview: (url: string) => void }) 
                       <button
                         onClick={() => review(p, 'approve')}
                         disabled={busy === p.id}
-                        className="text-white px-2.5 py-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-xs font-medium disabled:opacity-50 cursor-pointer"
+                        className="text-white px-2.5 py-1 rounded-lg btn-primary text-xs font-medium disabled:opacity-50 cursor-pointer"
                       >
                         อนุมัติ
                       </button>

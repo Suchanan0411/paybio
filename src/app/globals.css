@@ -3,53 +3,82 @@
 /* dark: ใช้ตามธีมที่เลือกบน <html data-theme> ไม่ใช่ตามการตั้งค่าเครื่อง */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* โหมดมืดเป็นค่าเริ่มต้น — <html data-theme="light"> สลับเป็นโหมดสว่าง */
+/*
+ * ดีไซน์ "กระจกฝ้า" (glass) โทนสบายตา
+ * - พื้นหลังเป็นแสงสีนุ่มๆ (body) แล้วการ์ดโปร่งแสง + เบลอสิ่งที่อยู่ด้านหลัง
+ * - สเกล slate ถูกแทนด้วยสีโปร่งแสง: 900 = พื้นการ์ด, 800 = พื้นช่องกรอก/เส้นแบ่ง, 700 = เส้นขอบ
+ * - ตัวอักษรไม่ขาว/ดำจัด เพื่อลดความแสบตา
+ * โหมดมืดเป็นค่าเริ่มต้น — <html data-theme="light"> สลับเป็นโหมดสว่าง
+ */
 :root {
-  --background: #020617;
-  --foreground: #ffffff;
+  --background: #0b1220;
+  --foreground: #e6ebf5;
+  --glow-1: rgb(59 110 246 / 0.28);
+  --glow-2: rgb(139 92 246 / 0.2);
+  --glow-3: rgb(20 184 166 / 0.16);
+  --glass-border: rgb(255 255 255 / 0.09);
+  --glass-highlight: rgb(255 255 255 / 0.06);
+  --glass-shadow: 0 10px 40px -12px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-noto-sans-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-anuphan), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-prompt), var(--font-anuphan), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* สีหลักของแบรนด์ (น้ำเงินตามโลโก้) และสีตัวอักษรหลัก */
+/* สีหลักของแบรนด์ (น้ำเงินตามโลโก้) และพื้นผิวแบบกระจก (โหมดมืด) */
 @theme {
-  --color-brand-300: #93c5fd;
-  --color-brand-400: #6b95f5;
-  --color-brand-500: #1e4fd8;
-  --color-brand-600: #1a43b8;
-  --color-brand-700: #163a9e;
-  --color-ink: #ffffff;
+  --color-brand-300: #a5c4ff;
+  --color-brand-400: #7ea6fb;
+  --color-brand-500: #3b6ef6;
+  --color-brand-600: #2f5ddc;
+  --color-brand-700: #2549b3;
+  --color-ink: #e6ebf5;
+
+  --color-slate-200: #dbe2ee;
+  --color-slate-300: #c3cddd;
+  --color-slate-400: #97a3b8;
+  --color-slate-500: #748198;
+  --color-slate-600: rgb(148 163 184 / 0.35);
+  --color-slate-700: rgb(148 163 184 / 0.2);
+  --color-slate-800: rgb(148 163 184 / 0.11);
+  --color-slate-900: rgb(22 32 54 / 0.5);
+  --color-slate-950: rgb(9 14 28 / 0.55);
 }
 
 /*
- * โหมดสว่าง: กลับด้านสเกล slate (พื้นหลังเข้ม → อ่อน, ตัวอักษรอ่อน → เข้ม)
- * และใช้เฉดเข้มขึ้นสำหรับตัวอักษรสีเน้น เพื่อให้อ่านง่ายบนพื้นขาว
+ * โหมดสว่าง: พื้นเทาฟ้าอ่อน แสงสีพาสเทล การ์ดขาวโปร่งแสง
+ * ตัวอักษรสีเน้นใช้เฉดเข้มขึ้นให้อ่านง่ายบนพื้นสว่าง
  */
 [data-theme="light"] {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #eef2f8;
+  --foreground: #1f2a3d;
+  --glow-1: rgb(96 140 255 / 0.3);
+  --glow-2: rgb(192 160 255 / 0.28);
+  --glow-3: rgb(110 220 200 / 0.24);
+  --glass-border: rgb(255 255 255 / 0.75);
+  --glass-highlight: rgb(255 255 255 / 0.7);
+  --glass-shadow: 0 10px 40px -14px rgb(30 50 100 / 0.22);
   color-scheme: light;
 
-  --color-ink: #0f172a;
-  --color-slate-200: #1e293b;
-  --color-slate-300: #334155;
-  --color-slate-400: #475569;
-  --color-slate-500: #64748b;
-  --color-slate-600: #94a3b8;
-  --color-slate-700: #cbd5e1;
-  --color-slate-800: #e2e8f0;
-  --color-slate-900: #ffffff;
-  --color-slate-950: #f8fafc;
+  --color-ink: #1f2a3d;
+  --color-slate-200: #263247;
+  --color-slate-300: #3a4760;
+  --color-slate-400: #56637a;
+  --color-slate-500: #717d92;
+  --color-slate-600: rgb(31 42 61 / 0.3);
+  --color-slate-700: rgb(31 42 61 / 0.14);
+  --color-slate-800: rgb(31 42 61 / 0.07);
+  --color-slate-900: rgb(255 255 255 / 0.62);
+  --color-slate-950: rgb(255 255 255 / 0.5);
 
-  --color-brand-300: #163a9e;
-  --color-brand-400: #1e4fd8;
-  --color-amber-400: #d97706;
+  --color-brand-300: #2549b3;
+  --color-brand-400: #2f5ddc;
+  --color-amber-400: #b45309;
   --color-rose-300: #be123c;
   --color-rose-400: #e11d48;
   --color-red-400: #dc2626;
@@ -60,14 +89,136 @@
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  background-color: var(--background);
+  /* แสงสีนุ่มๆ ด้านหลังกระจก (ติดอยู่กับจอ ไม่เลื่อนตาม) */
+  background-image:
+    radial-gradient(40rem 32rem at 12% -6%, var(--glow-1), transparent 70%),
+    radial-gradient(36rem 30rem at 95% 8%, var(--glow-2), transparent 70%),
+    radial-gradient(42rem 34rem at 60% 105%, var(--glow-3), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* หัวข้อใช้ Prompt น้ำหนักกลาง (ตัวหนาเต็มที่ดูแข็งเกินไป) */
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+}
+:where(h1, h2, h3).font-bold {
+  font-weight: 600;
+}
+
+/* การ์ดกระจก: พื้นโปร่งแสง เบลอด้านหลัง ขอบสว่างบางๆ */
+@utility glass {
+  background-color: var(--glass-bg, var(--color-slate-900));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* หน้าต่าง (dialog): กระจกทึบกว่าการ์ด ให้อ่านง่ายเมื่อซ้อนบนหน้าเว็บ */
+.glass-dialog {
+  --glass-bg: rgb(17 26 45 / 0.9);
+}
+[data-theme="light"] .glass-dialog {
+  --glass-bg: rgb(255 255 255 / 0.93);
+}
+
+/* แถบด้านบน / ฉากหลังหน้าต่าง: กระจกบางกว่า */
+@utility glass-bar {
+  background-color: var(--color-slate-950);
+  border-color: var(--glass-border);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* ปุ่มหลักแบบไล่สีนุ่มๆ */
+@utility btn-primary {
+  color: #fff;
+  background-image: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-600));
+  box-shadow: 0 6px 20px -6px color-mix(in srgb, var(--color-brand-500) 60%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.2);
+  transition: filter 0.15s, transform 0.15s;
+  &:hover {
+    filter: brightness(1.08);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    filter: none;
+    transform: none;
+  }
+}
+
+/*
+ * แท็บแบบหยดน้ำ (src/components/liquid-indicator.tsx)
+ * กล่อง liquid-host วางปุ่มไว้เหนือหยดน้ำ, หยดน้ำมีแสงสะท้อนด้านบนและเงาด้านล่างให้ดูนูนเหมือนกระจก
+ */
+.liquid-host {
+  position: relative;
+  isolation: isolate;
+  /* แถบแท็บที่เลื่อนซ้ายขวาได้บนมือถือ: ซ่อนแถบเลื่อน (ยังปัดเลื่อนได้ตามปกติ) */
+  scrollbar-width: none;
+}
+.liquid-host::-webkit-scrollbar {
+  display: none;
+}
+.liquid-host > :not(.liquid-indicator) {
+  position: relative;
+  z-index: 1;
+}
+.liquid-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  opacity: 0;
+  border-radius: 0.5rem;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform, width;
+}
+.liquid-indicator::after {
+  content: "";
+  position: absolute;
+  inset: 1px 12% auto;
+  height: 46%;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.38), rgb(255 255 255 / 0));
+}
+.liquid-brand {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-brand-500) 85%, white),
+    var(--color-brand-600)
+  );
+  box-shadow:
+    0 8px 20px -8px color-mix(in srgb, var(--color-brand-500) 75%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset 0 -3px 8px rgb(0 0 0 / 0.16);
+}
+.liquid-clear {
+  background: color-mix(in srgb, var(--color-slate-900) 70%, rgb(255 255 255 / 0.12));
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 6px 18px -8px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(12px) saturate(170%);
+  backdrop-filter: blur(12px) saturate(170%);
+}
+[data-theme="light"] .liquid-clear {
+  background: rgb(255 255 255 / 0.85);
 }
 
 /*
  * ธีมหน้าร้าน: element ที่มี class shop-theme รับเฉด --p300..--p700 จาก style (src/lib/shop-theme.ts)
  * แล้วแทนที่สีแบรนด์ทั้งหมดภายในนั้น (โหมดสว่างใช้เฉดเข้มสำหรับตัวอักษรสีเน้น เหมือนสีหลัก)
+ * หัวข้อในหน้าร้านใช้ฟอนต์ที่ร้านเลือก และแสงสีด้านหลังเป็นสีของร้าน
  */
 .shop-theme {
   --color-brand-300: var(--p300);
@@ -75,6 +226,14 @@ body {
   --color-brand-500: var(--p500);
   --color-brand-600: var(--p600);
   --color-brand-700: var(--p700);
+  background-image:
+    radial-gradient(36rem 30rem at 15% -5%, color-mix(in srgb, var(--p500) 30%, transparent), transparent 70%),
+    radial-gradient(32rem 28rem at 100% 30%, color-mix(in srgb, var(--p300) 18%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+
+.shop-theme :where(h1, h2, h3) {
+  font-family: inherit;
 }
 
 [data-theme="light"] .shop-theme {

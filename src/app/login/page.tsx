@@ -10,7 +10,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-sm">
+        <div className="min-h-screen text-slate-400 flex items-center justify-center text-sm">
           กำลังโหลด...
         </div>
       }

@@ -162,7 +162,7 @@ export function OrderAlerts<T extends AlertOrder>({
           {alerts.map((a) => (
             <div
               key={a.key}
-              className={`bg-slate-900 border ${TONE[a.tone]} rounded-xl shadow-2xl p-3 flex gap-2 items-start`}
+              className={`glass ${TONE[a.tone]} rounded-xl p-3 flex gap-2 items-start`}
             >
               <Bell className="w-4 h-4 text-brand-400 shrink-0 mt-0.5" />
               <button

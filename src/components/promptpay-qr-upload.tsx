@@ -50,7 +50,7 @@ export function PromptpayQrUpload({ url, onChange, notify }: Props) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+    <div className="glass p-5 rounded-2xl space-y-4">
       <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
         <QrCode className="w-4 h-4 text-brand-400" /> รูป QR พร้อมเพย์ของร้าน
       </div>
@@ -79,7 +79,7 @@ export function PromptpayQrUpload({ url, onChange, notify }: Props) {
           />
           <label
             htmlFor="promptpay-qr-upload"
-            className={`text-white px-4 py-2 bg-brand-500 hover:bg-brand-600 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+            className={`text-white px-4 py-2 btn-primary rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer ${
               busy ? 'opacity-50 pointer-events-none' : ''
             }`}
           >

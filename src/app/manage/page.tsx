@@ -40,6 +40,7 @@ import { AccountProfile, type Account as AccountInfo } from '@/components/accoun
 import { OrderFulfillmentDialog } from '@/components/order-fulfillment';
 import { ShippingSettings } from '@/components/shipping-settings';
 import { BulkShipDialog } from '@/components/bulk-ship';
+import { LiquidIndicator } from '@/components/liquid-indicator';
 import { FULFILLMENT_LABEL, carrierOf, type Fulfillment } from '@/lib/order-stages';
 import { PLAN_LIMITS, PLAN_NAMES, planOf } from '@/lib/plans';
 import type { SlipCheck } from '@/lib/slip-check';
@@ -394,7 +395,7 @@ export default function ManageShopPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-sm">
+      <div className="min-h-screen text-slate-400 flex items-center justify-center text-sm">
         กำลังโหลดระบบจัดการร้านค้า...
       </div>
     );
@@ -402,7 +403,7 @@ export default function ManageShopPage() {
 
   if (!shop) {
     return (
-      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4 text-center">
         <h2 className="text-xl font-bold mb-2">โหลดข้อมูลร้านค้าไม่สำเร็จ</h2>
         <p className="text-sm text-slate-400 mb-4">กรุณาลองใหม่อีกครั้ง</p>
         <button onClick={() => window.location.reload()} className="text-white px-4 py-2 bg-brand-500 rounded-xl font-medium text-sm">
@@ -448,7 +449,7 @@ export default function ManageShopPage() {
   const storagePct = slipStorage ? Math.min(100, (slipStorage.used / slipStorage.limit) * 100) : 0;
   const storageFull = !!slipStorage && slipStorage.retentionDays == null && storagePct >= 90;
   const storageCard = slipStorage && (
-    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-2">
+    <div className="glass p-5 rounded-2xl space-y-2">
       <div className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5 text-slate-400">
           <ImageIcon className="w-3.5 h-3.5" /> พื้นที่เก็บรูปสลิป
@@ -552,7 +553,7 @@ export default function ManageShopPage() {
           <button
             onClick={() => updateOrderStatus(order, 'paid')}
             disabled={updatingId === order.id}
-            className="text-white px-2.5 py-1 rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-medium cursor-pointer"
+            className="text-white px-2.5 py-1 rounded-lg btn-primary disabled:opacity-50 font-medium cursor-pointer"
           >
             อนุมัติ
           </button>
@@ -578,9 +579,9 @@ export default function ManageShopPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink">
+    <div className="min-h-screen text-ink">
       {/* แถบด้านบน */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+      <header className="border-b glass-bar sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <Link href="/" aria-label="PayBio หน้าแรก">
           <Logo size="sm" />
@@ -648,7 +649,7 @@ export default function ManageShopPage() {
         )}
 
         {/* หัวร้าน */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass p-6 rounded-2xl">
           <div className="min-w-0">
             <span className="text-xs uppercase font-semibold text-brand-400 tracking-wider">แผงควบคุมร้านค้า</span>
             <h1 className="text-2xl font-bold mt-1 truncate">{shop.shop_name}</h1>
@@ -665,7 +666,7 @@ export default function ManageShopPage() {
             <Link
               href={`/${shop.slug}`}
               target="_blank"
-              className="text-white flex items-center gap-1.5 px-3.5 py-2 bg-brand-500 hover:bg-brand-600 text-xs font-semibold rounded-xl transition"
+              className="text-white flex items-center gap-1.5 px-3.5 py-2 btn-primary text-xs font-semibold rounded-xl transition"
             >
               เปิดหน้าร้าน <ExternalLink className="w-3.5 h-3.5" />
             </Link>
@@ -673,13 +674,15 @@ export default function ManageShopPage() {
         </div>
 
         {/* แท็บ */}
-        <nav className="flex gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+        <nav className="liquid-host flex gap-1 p-1 glass rounded-xl overflow-x-auto">
+          <LiquidIndicator active={tab} />
           {TABS.map(({ key, label, Icon }) => (
             <button
               key={key}
+              data-active={tab === key}
               onClick={() => setTab(key)}
-              className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
-                tab === key ? 'bg-brand-500 text-white' : 'text-slate-400 hover:text-ink hover:bg-slate-800'
+              className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-300 cursor-pointer whitespace-nowrap ${
+                tab === key ? 'text-white' : 'text-slate-400 hover:text-ink hover:bg-slate-800'
               }`}
             >
               <Icon className="w-3.5 h-3.5" /> {label}
@@ -696,7 +699,7 @@ export default function ManageShopPage() {
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {stats.map((s) => (
-                <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <div key={s.label} className="glass rounded-2xl p-4">
                   <p className="text-xs text-slate-400">{s.label}</p>
                   <p className={`text-xl sm:text-2xl font-bold mt-1 ${s.accent ?? ''}`}>{s.value}</p>
                 </div>
@@ -712,14 +715,14 @@ export default function ManageShopPage() {
                 <p className="text-xs text-slate-400 mt-1">เพิ่มสินค้าชิ้นแรกเพื่อให้ลูกค้าสั่งซื้อได้</p>
                 <button
                   onClick={() => setTab('products')}
-                  className="text-white mt-4 px-4 py-2 bg-brand-500 hover:bg-brand-600 rounded-xl text-xs font-semibold cursor-pointer"
+                  className="text-white mt-4 px-4 py-2 btn-primary rounded-xl text-xs font-semibold cursor-pointer"
                 >
                   เพิ่มสินค้า
                 </button>
               </div>
             )}
 
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="glass rounded-2xl overflow-hidden">
               <div className="p-4 border-b border-slate-800 font-semibold text-sm flex justify-between items-center">
                 <span>รอตรวจสอบสลิป ({pendingOrders.length})</span>
                 <button onClick={() => setTab('orders')} className="text-xs text-brand-400 hover:underline cursor-pointer">
@@ -738,20 +741,22 @@ export default function ManageShopPage() {
         )}
 
         {tab === 'orders' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <div className="glass rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-slate-800 flex flex-wrap gap-2 justify-between items-center">
-              <div className="flex flex-wrap gap-1.5">
+              <div className="liquid-host flex flex-wrap gap-1.5">
+                <LiquidIndicator active={orderFilter} />
                 {(['all', 'pending', 'toship', 'paid', 'rejected'] as const).map((key) => (
                   <button
                     key={key}
+                    data-active={orderFilter === key}
                     onClick={() => {
                       setOrderFilter(key);
                       setSelectedIds(new Set());
                     }}
-                    className={`text-xs px-3 py-1.5 rounded-lg border transition cursor-pointer ${
+                    className={`text-xs px-3 py-1.5 rounded-lg border transition-colors duration-300 cursor-pointer ${
                       orderFilter === key
-                        ? 'bg-brand-500 border-brand-500 text-white'
-                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
+                        ? 'border-transparent text-white'
+                        : 'border-slate-800 text-slate-300 hover:bg-slate-800'
                     }`}
                   >
                     {key === 'all' ? 'ทั้งหมด' : key === 'toship' ? `รอจัดส่ง (${toShipOrders.length})` : STATUS_LABEL[key]}
@@ -786,7 +791,7 @@ export default function ManageShopPage() {
                   </select>
                   <a
                     href={`/api/orders/export?months=${exportMonths}`}
-                    className="text-white px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 font-semibold"
+                    className="text-white px-3 py-1.5 rounded-lg btn-primary font-semibold"
                   >
                     ดาวน์โหลด
                   </a>
@@ -826,7 +831,7 @@ export default function ManageShopPage() {
                   <button
                     disabled={!selectedOrders.length}
                     onClick={() => setBulkShip(true)}
-                    className="text-white px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 font-semibold disabled:opacity-40 cursor-pointer"
+                    className="text-white px-3 py-1.5 rounded-lg btn-primary font-semibold disabled:opacity-40 cursor-pointer"
                   >
                     ใส่เลขพัสดุ
                   </button>
@@ -846,7 +851,7 @@ export default function ManageShopPage() {
         )}
 
         {tab === 'products' && (
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+          <div className="glass p-5 rounded-2xl space-y-4">
             <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
               <Package className="w-4 h-4 text-brand-400" /> รายการสินค้า ({products.length}
               {Number.isFinite(limits.maxProducts) && `/${limits.maxProducts}`})
@@ -879,7 +884,7 @@ export default function ManageShopPage() {
               <button
                 type="submit"
                 disabled={addingProduct}
-                className="text-white px-4 py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
+                className="text-white px-4 py-2 btn-primary disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> {addingProduct ? 'กำลังเพิ่ม...' : 'เพิ่มสินค้า'}
               </button>
@@ -919,7 +924,7 @@ export default function ManageShopPage() {
                         <button
                           type="submit"
                           disabled={savingProduct}
-                          className="text-white flex-1 px-3 py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
+                          className="text-white flex-1 px-3 py-2 btn-primary disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
                         >
                           <Save className="w-4 h-4" /> {savingProduct ? 'กำลังบันทึก...' : 'บันทึก'}
                         </button>
@@ -977,7 +982,7 @@ export default function ManageShopPage() {
             />
           )}
 
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-3">
+          <div className="glass p-5 rounded-2xl flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-brand-400 shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-slate-400">แพ็กเกจปัจจุบัน</p>
@@ -995,7 +1000,7 @@ export default function ManageShopPage() {
 
           {slipStorage && storageCard}
 
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+          <div className="glass p-5 rounded-2xl space-y-4">
             <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
               <Store className="w-4 h-4 text-brand-400" /> ข้อมูลร้านค้า
             </div>
@@ -1038,7 +1043,7 @@ export default function ManageShopPage() {
               <button
                 type="submit"
                 disabled={savingShop}
-                className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="text-white w-full py-2.5 btn-primary disabled:opacity-50 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" /> {savingShop ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
               </button>
@@ -1072,7 +1077,7 @@ export default function ManageShopPage() {
             notify={notify}
           />
 
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+          <div className="glass p-5 rounded-2xl space-y-3">
             <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
               <Globe className="w-4 h-4 text-brand-400" /> โดเมนของตนเอง (Custom Domain)
             </div>
@@ -1093,7 +1098,7 @@ export default function ManageShopPage() {
                 <button
                   type="submit"
                   disabled={savingDomain}
-                  className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-xs font-semibold rounded-xl transition cursor-pointer"
+                  className="text-white w-full py-2.5 btn-primary disabled:opacity-50 text-xs font-semibold rounded-xl transition cursor-pointer"
                 >
                   {savingDomain ? 'กำลังบันทึก...' : 'บันทึกโดเมน'}
                 </button>
@@ -1151,9 +1156,9 @@ export default function ManageShopPage() {
       {previewOrder?.slip_url && (
         <div
           onClick={() => setPreviewOrder(null)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
         >
-          <div onClick={(e) => e.stopPropagation()} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 max-w-md w-full relative">
+          <div onClick={(e) => e.stopPropagation()} className="glass glass-dialog rounded-2xl p-4 max-w-md w-full relative">
             <button onClick={() => setPreviewOrder(null)} className="absolute top-3 right-3 text-slate-400 hover:text-ink cursor-pointer">
               <X className="w-4 h-4" />
             </button>

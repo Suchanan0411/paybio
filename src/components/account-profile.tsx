@@ -119,7 +119,7 @@ export function AccountProfile({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+    <div className="glass p-5 rounded-2xl space-y-4">
       <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
         <UserRound className="w-4 h-4 text-brand-400" /> โปรไฟล์บัญชี
       </div>
@@ -137,7 +137,7 @@ export function AccountProfile({
           <label
             htmlFor="avatar-upload"
             title="เปลี่ยนรูปโปรไฟล์"
-            className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center cursor-pointer border-2 border-slate-900 ${
+            className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full btn-primary text-white flex items-center justify-center cursor-pointer border-2 border-slate-900 ${
               avatarBusy ? 'opacity-50 pointer-events-none' : ''
             }`}
           >
@@ -186,7 +186,7 @@ export function AccountProfile({
           <button
             type="submit"
             disabled={savingName || !name.trim() || name.trim() === (account.name ?? '')}
-            className="text-white px-4 py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0"
+            className="text-white px-4 py-2 btn-primary disabled:opacity-50 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0"
           >
             <Save className="w-3.5 h-3.5" /> {savingName ? 'กำลังบันทึก...' : 'บันทึก'}
           </button>

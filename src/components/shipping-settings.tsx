@@ -67,7 +67,7 @@ export function ShippingSettings<T extends { shipping?: unknown }>({
   };
 
   return (
-    <form onSubmit={save} className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4">
+    <form onSubmit={save} className="glass p-5 rounded-2xl space-y-4">
       <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
         <Truck className="w-4 h-4 text-brand-400" /> การจัดส่งและค่าส่ง
       </div>
@@ -208,7 +208,7 @@ export function ShippingSettings<T extends { shipping?: unknown }>({
       <button
         type="submit"
         disabled={saving}
-        className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
+        className="text-white w-full py-2.5 btn-primary disabled:opacity-50 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
       >
         <Save className="w-3.5 h-3.5" /> {saving ? 'กำลังบันทึก...' : 'บันทึกการจัดส่ง'}
       </button>

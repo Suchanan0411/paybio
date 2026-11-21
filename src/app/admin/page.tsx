@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Logo } from '@/components/logo';
+import { LiquidIndicator } from '@/components/liquid-indicator';
 import type { Plan } from '@/lib/plans';
 import { AuditTab } from './audit-tab';
 import { ReportsTab } from './reports-tab';
@@ -191,7 +192,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-sm">
+      <div className="min-h-screen text-slate-400 flex items-center justify-center text-sm">
         กำลังโหลดแผงผู้ดูแลระบบ...
       </div>
     );
@@ -199,12 +200,12 @@ export default function AdminPage() {
 
   if (forbidden) {
     return (
-      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4 text-center">
         <ShieldCheck className="w-10 h-10 text-slate-500 mb-3" />
         <h1 className="text-xl font-bold">ไม่มีสิทธิ์เข้าถึง</h1>
         <p className="text-sm text-slate-400 mt-1 mb-5">หน้านี้สำหรับผู้ดูแลระบบเท่านั้น</p>
         <div className="flex gap-2">
-          <Link href="/manage" className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-sm font-medium">
+          <Link href="/manage" className="px-4 py-2 btn-primary text-white rounded-xl text-sm font-medium">
             ไปหน้าจัดการร้าน
           </Link>
           <button onClick={handleLogout} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm cursor-pointer">
@@ -371,8 +372,8 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink">
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+    <div className="min-h-screen text-ink">
+      <header className="border-b glass-bar sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link href="/" aria-label="PayBio หน้าแรก">
@@ -414,13 +415,15 @@ export default function AdminPage() {
           <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">{error}</div>
         )}
 
-        <nav className="flex gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+        <nav className="liquid-host flex gap-1 p-1 glass rounded-xl overflow-x-auto">
+          <LiquidIndicator active={tab} />
           {TABS.map(({ key, label, Icon }) => (
             <button
               key={key}
+              data-active={tab === key}
               onClick={() => setTab(key)}
-              className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
-                tab === key ? 'bg-brand-500 text-white' : 'text-slate-400 hover:text-ink hover:bg-slate-800'
+              className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-300 cursor-pointer whitespace-nowrap ${
+                tab === key ? 'text-white' : 'text-slate-400 hover:text-ink hover:bg-slate-800'
               }`}
             >
               <Icon className="w-3.5 h-3.5" /> {label}
@@ -435,7 +438,7 @@ export default function AdminPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="ค้นหา..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-ink placeholder-slate-500 focus:outline-none focus:border-brand-500"
+              className="w-full glass rounded-xl pl-9 pr-3 py-2 text-sm text-ink placeholder-slate-500 focus:outline-none focus:border-brand-500"
             />
           </div>
         )}
@@ -527,9 +530,9 @@ export default function AdminPage() {
       {suspendTarget && (
         <div
           onClick={() => !savingSuspend && setSuspendTarget(null)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
         >
-          <div onClick={(e) => e.stopPropagation()} className={`${card} p-6 max-w-sm w-full`}>
+          <div onClick={(e) => e.stopPropagation()} className={`${card} glass-dialog p-6 max-w-sm w-full`}>
             {suspendTarget.suspended_at ? (
               <>
                 <h3 className="text-base font-bold">ยกเลิกการระงับร้าน?</h3>
@@ -568,7 +571,7 @@ export default function AdminPage() {
                 onClick={confirmSuspend}
                 disabled={savingSuspend}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50 cursor-pointer ${
-                  suspendTarget.suspended_at ? 'bg-brand-500 hover:bg-brand-600' : 'bg-rose-600 hover:bg-rose-700'
+                  suspendTarget.suspended_at ? 'btn-primary' : 'bg-rose-600 hover:bg-rose-700'
                 }`}
               >
                 {savingSuspend ? 'กำลังบันทึก...' : suspendTarget.suspended_at ? 'ยกเลิกระงับ' : 'ระงับร้าน'}
@@ -581,9 +584,9 @@ export default function AdminPage() {
       {previewUrl && (
         <div
           onClick={() => setPreviewUrl(null)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
         >
-          <div onClick={(e) => e.stopPropagation()} className={`${card} p-4 max-w-md w-full relative`}>
+          <div onClick={(e) => e.stopPropagation()} className={`${card} glass-dialog p-4 max-w-md w-full relative`}>
             <button onClick={() => setPreviewUrl(null)} className="absolute top-3 right-3 text-slate-400 hover:text-ink cursor-pointer">
               <X className="w-4 h-4" />
             </button>

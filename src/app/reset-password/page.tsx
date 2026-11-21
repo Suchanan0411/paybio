@@ -49,11 +49,11 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4">
       <Link href="/" aria-label="PayBio หน้าแรก" className="mb-6">
         <Logo />
       </Link>
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+      <div className="w-full max-w-md glass rounded-2xl p-6 sm:p-8 shadow-2xl">
         {ready === 'loading' ? (
           <p className="text-center text-sm text-slate-400">กำลังโหลด...</p>
         ) : ready === 'no-session' ? (
@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-semibold rounded-xl transition cursor-pointer shadow-lg shadow-brand-500/20"
+              className="text-white w-full py-3 btn-primary disabled:opacity-50 font-semibold rounded-xl transition cursor-pointer shadow-lg shadow-brand-500/20"
             >
               {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
             </button>

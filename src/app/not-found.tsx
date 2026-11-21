@@ -4,7 +4,7 @@ import { Logo } from '@/components/logo';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4 text-center">
+    <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4 text-center">
       <Link href="/" aria-label="PayBio หน้าแรก" className="mb-8">
         <Logo />
       </Link>
@@ -16,7 +16,7 @@ export default function NotFound() {
       <div className="flex gap-2 mt-6">
         <Link
           href="/"
-          className="text-white px-4 py-2 bg-brand-500 hover:bg-brand-600 rounded-xl text-sm font-semibold transition"
+          className="text-white px-4 py-2 btn-primary rounded-xl text-sm font-semibold transition"
         >
           กลับหน้าแรก
         </Link>

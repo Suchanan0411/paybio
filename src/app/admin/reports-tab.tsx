@@ -45,7 +45,7 @@ export function ReportsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl w-fit" role="group" aria-label="ช่วงเวลา">
+      <div className="flex gap-1 p-1 glass rounded-xl w-fit" role="group" aria-label="ช่วงเวลา">
         {RANGES.map((r) => (
           <button
             key={r}

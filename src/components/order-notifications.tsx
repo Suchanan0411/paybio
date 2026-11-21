@@ -81,7 +81,7 @@ export function OrderNotifications({
   const sendCodeUrl = line?.code ? `https://line.me/R/oaMessage/${encodeURIComponent(oaId)}/?${encodeURIComponent(line.code)}` : '';
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-5">
+    <div className="glass p-5 rounded-2xl space-y-5">
       <div className="flex items-center gap-2 font-semibold text-sm border-b border-slate-800 pb-3">
         <Bell className="w-4 h-4 text-brand-400" /> แจ้งเตือนออเดอร์ใหม่
       </div>
@@ -247,7 +247,7 @@ export function OrderNotifications({
               <button
                 type="submit"
                 disabled={!!busy}
-                className="flex-1 text-white py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-xs font-semibold rounded-xl cursor-pointer"
+                className="flex-1 text-white py-2 btn-primary disabled:opacity-50 text-xs font-semibold rounded-xl cursor-pointer"
               >
                 {busy === 'webhook' ? 'กำลังบันทึก...' : 'บันทึก Webhook'}
               </button>

@@ -143,7 +143,7 @@ export default function ShopDetail({ id }: { id: string }) {
 
   if (error && !data) {
     return (
-      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4 text-center gap-3">
+      <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4 text-center gap-3">
         <p className="text-sm text-red-400">{error}</p>
         <Link href="/admin" className="text-sm text-brand-400 hover:underline">
           กลับแผงผู้ดูแลระบบ
@@ -152,14 +152,14 @@ export default function ShopDetail({ id }: { id: string }) {
     );
   }
   if (!data) {
-    return <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-sm">กำลังโหลด...</div>;
+    return <div className="min-h-screen text-slate-400 flex items-center justify-center text-sm">กำลังโหลด...</div>;
   }
 
   const { shop, owner, stats, storage } = data;
   const storagePct = storage ? Math.min(100, (storage.used / storage.limit) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink">
+    <div className="min-h-screen text-ink">
       <main className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
         <Link href="/admin" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-ink">
           <ArrowLeft className="w-3.5 h-3.5" /> แผงผู้ดูแลระบบ
@@ -303,7 +303,7 @@ export default function ShopDetail({ id }: { id: string }) {
               <button
                 onClick={grant}
                 disabled={saving}
-                className="text-white px-4 py-2 bg-brand-500 hover:bg-brand-600 rounded-xl text-sm font-semibold disabled:opacity-50 cursor-pointer"
+                className="text-white px-4 py-2 btn-primary rounded-xl text-sm font-semibold disabled:opacity-50 cursor-pointer"
               >
                 {saving ? 'กำลังบันทึก...' : grantPlan === 'free' ? 'เปลี่ยนเป็น Free' : `ให้สิทธิ์ ${PLAN_NAMES[grantPlan]}`}
               </button>
@@ -445,9 +445,9 @@ export default function ShopDetail({ id }: { id: string }) {
       {suspendOpen && (
         <div
           onClick={() => !saving && setSuspendOpen(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
         >
-          <div onClick={(e) => e.stopPropagation()} className={`${card} p-6 max-w-sm w-full`}>
+          <div onClick={(e) => e.stopPropagation()} className={`${card} glass-dialog p-6 max-w-sm w-full`}>
             <h3 className="text-base font-bold flex items-center gap-2">
               <Store className="w-4 h-4" />
               {shop.suspended_at ? 'ยกเลิกการระงับร้าน?' : `ระงับร้าน ${shop.shop_name}?`}
@@ -484,7 +484,7 @@ export default function ShopDetail({ id }: { id: string }) {
                 }
                 disabled={saving}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50 cursor-pointer ${
-                  shop.suspended_at ? 'bg-brand-500 hover:bg-brand-600' : 'bg-rose-600 hover:bg-rose-700'
+                  shop.suspended_at ? 'btn-primary' : 'bg-rose-600 hover:bg-rose-700'
                 }`}
               >
                 {saving ? 'กำลังบันทึก...' : shop.suspended_at ? 'ยกเลิกระงับ' : 'ระงับร้าน'}
@@ -495,8 +495,8 @@ export default function ShopDetail({ id }: { id: string }) {
       )}
 
       {preview && (
-        <div onClick={() => setPreview(null)} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div onClick={(e) => e.stopPropagation()} className={`${card} p-4 max-w-md w-full relative`}>
+        <div onClick={() => setPreview(null)} className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div onClick={(e) => e.stopPropagation()} className={`${card} glass-dialog p-4 max-w-md w-full relative`}>
             <button onClick={() => setPreview(null)} aria-label="ปิด" className="absolute top-3 right-3 text-slate-400 hover:text-ink cursor-pointer">
               <X className="w-4 h-4" />
             </button>

@@ -19,7 +19,7 @@ export function BarChart({
   const tickEvery = Math.ceil(data.length / 5);
 
   return (
-    <figure className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+    <figure className="glass rounded-2xl p-4">
       <figcaption className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold">{title}</span>
         <span className="text-xs text-slate-400 tabular-nums">

@@ -7,6 +7,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import generatePayload from 'promptpay-qr';
 import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Sparkles, UploadCloud, XCircle } from 'lucide-react';
 import { Logo } from '@/components/logo';
+import { LiquidIndicator } from '@/components/liquid-indicator';
 import { PLAN_NAMES, PLAN_RANK, type Billing, type Plan } from '@/lib/plans';
 
 type PaidPlan = Exclude<Plan, 'free'>;
@@ -100,14 +101,14 @@ function Upgrade() {
 
   if (!info) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-400 flex items-center justify-center text-sm">
+      <div className="min-h-screen text-slate-400 flex items-center justify-center text-sm">
         {error || 'กำลังโหลด...'}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-ink">
+    <div className="min-h-screen text-ink">
       <header className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" aria-label="PayBio หน้าแรก">
           <Logo size="sm" />
@@ -155,7 +156,7 @@ function Upgrade() {
               type="button"
               onClick={() => setPlan(p)}
               className={`text-left rounded-2xl border p-4 transition cursor-pointer ${
-                plan === p ? 'border-brand-500 bg-brand-500/10' : 'border-slate-800 bg-slate-900 hover:border-slate-600'
+                plan === p ? 'border-brand-500 bg-brand-500/10' : 'glass hover:border-slate-600'
               }`}
             >
               <p className="font-semibold flex items-center gap-1.5">
@@ -174,14 +175,16 @@ function Upgrade() {
           ))}
         </div>
 
-        <div className="inline-grid grid-cols-2 gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl text-sm">
+        <div className="liquid-host inline-grid grid-cols-2 gap-1 p-1 glass rounded-xl text-sm">
+          <LiquidIndicator active={billing} />
           {(['monthly', 'yearly'] as const).map((b) => (
             <button
               key={b}
               type="button"
+              data-active={billing === b}
               onClick={() => setBilling(b)}
-              className={`px-4 py-1.5 rounded-lg font-medium transition cursor-pointer ${
-                billing === b ? 'bg-brand-500 text-white' : 'text-slate-400 hover:text-ink'
+              className={`px-4 py-1.5 rounded-lg font-medium transition-colors duration-300 cursor-pointer ${
+                billing === b ? 'text-white' : 'text-slate-400 hover:text-ink'
               }`}
             >
               {b === 'monthly' ? 'รายเดือน' : 'รายปี (ประหยัด 2 เดือน)'}
@@ -190,7 +193,7 @@ function Upgrade() {
         </div>
 
         {/* ชำระเงิน */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="glass rounded-2xl p-5">
           {!info.promptpay ? (
             <p className="text-sm text-amber-400 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" /> ระบบยังไม่เปิดรับชำระค่าแพ็กเกจ กรุณาติดต่อผู้ดูแล
@@ -245,7 +248,7 @@ function Upgrade() {
                   type="button"
                   onClick={submit}
                   disabled={submitting}
-                  className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 font-semibold rounded-xl cursor-pointer"
+                  className="text-white w-full py-2.5 btn-primary disabled:opacity-50 font-semibold rounded-xl cursor-pointer"
                 >
                   {submitting ? 'กำลังตรวจสลิป...' : `ยืนยันการชำระ ${baht(amount)}`}
                 </button>
@@ -255,7 +258,7 @@ function Upgrade() {
         </div>
 
         {info.payments.length > 0 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div className="glass rounded-2xl p-4">
             <p className="text-xs font-semibold text-slate-400 mb-2">ประวัติการชำระ</p>
             <ul className="divide-y divide-slate-800 text-xs">
               {info.payments.map((p) => {
@@ -288,7 +291,7 @@ function Upgrade() {
 
 export default function UpgradePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+    <Suspense fallback={<div className="min-h-screen" />}>
       <Upgrade />
     </Suspense>
   );

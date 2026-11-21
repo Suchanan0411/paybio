@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Thai, Geist_Mono, Poppins } from "next/font/google";
+import { Anuphan, Noto_Sans_Thai, Geist_Mono, Poppins, Prompt } from "next/font/google";
 import "./globals.css";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 
+// ฟอนต์เนื้อหา: Anuphan อ่านสบายตา / หัวข้อ: Prompt มนและทันสมัย
+const anuphan = Anuphan({
+  variable: "--font-anuphan",
+  subsets: ["thai", "latin"],
+});
+
+const prompt = Prompt({
+  variable: "--font-prompt",
+  subsets: ["thai", "latin"],
+  weight: ["500", "600"],
+});
+
+// ร้านที่เลือกฟอนต์ Noto Sans Thai ในธีมหน้าร้าน
 const notoSansThai = Noto_Sans_Thai({
   variable: "--font-noto-sans-thai",
   subsets: ["thai", "latin"],
+  preload: false,
 });
 
 // ฟอนต์ตัวอักษรโลโก้ PayBio
@@ -32,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="th"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${notoSansThai.variable} ${geistMono.variable} ${poppins.variable} h-full antialiased`}
+      className={`${anuphan.variable} ${prompt.variable} ${notoSansThai.variable} ${geistMono.variable} ${poppins.variable} h-full antialiased`}
     >
       <head>
         {/* type เป็น text/plain ฝั่ง client เพื่อไม่ให้ React เตือนเรื่อง script; สคริปต์รันแล้วตอนโหลด HTML */}
@@ -42,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-slate-950">
+      <body className="min-h-full flex flex-col">
         {children}
         <ThemeToggle />
       </body>

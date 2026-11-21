@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { PLAN_LIMITS, planOf } from '@/lib/plans';
 import { LogoMark } from '@/components/logo';
+import { LiquidIndicator } from '@/components/liquid-indicator';
 import { resolveTheme, themeStyle } from '@/lib/shop-theme';
 import { SHOP_FONT_VARIABLES } from '@/lib/shop-fonts';
 import type { PublicProduct, PublicShop } from '@/lib/shop-data';
@@ -305,7 +306,7 @@ export default function ShopFront({
   return (
     <div
       style={themeStyle(theme)}
-      className={`shop-theme ${SHOP_FONT_VARIABLES} min-h-screen bg-slate-950 text-ink flex flex-col items-center px-4 pt-6 pb-10`}
+      className={`shop-theme ${SHOP_FONT_VARIABLES} min-h-screen text-ink flex flex-col items-center px-4 pt-6 pb-10`}
     >
       <div className="w-full max-w-md">
         <div className="flex justify-end">
@@ -326,7 +327,7 @@ export default function ShopFront({
             </span>
             <Link
               href="/login?mode=signup"
-              className="shrink-0 text-white px-3 py-2 bg-brand-500 hover:bg-brand-600 rounded-lg font-semibold"
+              className="shrink-0 text-white px-3 py-2 btn-primary rounded-lg font-semibold"
             >
               เปิดร้านฟรี
             </Link>
@@ -344,7 +345,7 @@ export default function ShopFront({
             <span className="inline-flex items-center gap-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2.5 py-1 rounded-full">
               <BadgeCheck className="w-3.5 h-3.5" /> รับชำระผ่านพร้อมเพย์
             </span>
-            <span className="bg-slate-900 text-slate-400 border border-slate-800 px-2.5 py-1 rounded-full">
+            <span className="glass text-slate-400 px-2.5 py-1 rounded-full">
               {products.length.toLocaleString('th-TH')} รายการ
             </span>
           </div>
@@ -365,7 +366,7 @@ export default function ShopFront({
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 px-1 mb-3">
               <Receipt className="w-3.5 h-3.5" /> คำสั่งซื้อของคุณ
             </h2>
-            <ul className="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800">
+            <ul className="glass rounded-2xl divide-y divide-slate-800">
               {myOrders.map((o) => {
                 const st = o.status ? ORDER_STATUS[o.status] : null;
                 return (
@@ -414,7 +415,7 @@ export default function ShopFront({
                   <button
                     onClick={() => openCheckout(item)}
                     disabled={!!closed}
-                    className="w-full text-left bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-brand-500/40 rounded-2xl p-4 flex items-center gap-3 transition cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:border-slate-800"
+                    className="w-full text-left glass hover:border-brand-500/40 rounded-2xl p-4 flex items-center gap-3 transition cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-transparent"
                   >
                     {item.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -444,7 +445,7 @@ export default function ShopFront({
         </section>
 
         {/* วิธีสั่งซื้อ */}
-        <section className="mt-8 bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+        <section className="mt-8 glass rounded-2xl p-4">
           <h2 className="text-sm font-semibold mb-3">สั่งซื้ออย่างไร</h2>
           <ol className="space-y-2.5 text-xs text-slate-400">
             {[
@@ -480,14 +481,14 @@ export default function ShopFront({
       {selected && (
         <div
           onClick={() => !submitting && setSelected(null)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 z-50"
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="checkout-title"
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-800 w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-5 max-h-[92vh] overflow-y-auto relative shadow-2xl"
+            className="glass glass-dialog w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl p-5 max-h-[92vh] overflow-y-auto relative shadow-2xl"
           >
             <div className="flex items-center gap-2 mb-4">
               {step === 'pay' && (
@@ -730,7 +731,7 @@ export default function ShopFront({
                 {error && <p className="text-xs text-rose-400">{error}</p>}
                 <button
                   type="submit"
-                  className="text-white w-full py-3 bg-brand-500 hover:bg-brand-600 font-semibold rounded-xl text-sm transition cursor-pointer"
+                  className="text-white w-full py-3 btn-primary font-semibold rounded-xl text-sm transition cursor-pointer"
                 >
                   ถัดไป: ชำระเงิน
                 </button>
@@ -746,14 +747,16 @@ export default function ShopFront({
                 <p className="text-3xl font-bold text-brand-400 mt-1">{baht(total)}</p>
 
                 {shop.promptpay_qr_url && (
-                  <div className="mt-4 inline-grid grid-cols-2 gap-1 p-1 bg-slate-800/60 rounded-xl text-xs">
+                  <div className="liquid-host mt-4 inline-grid grid-cols-2 gap-1 p-1 bg-slate-800/60 rounded-xl text-xs">
+                    <LiquidIndicator active={qrMode} variant="clear" />
                     {(['shop', 'auto'] as const).map((m) => (
                       <button
                         key={m}
                         type="button"
+                        data-active={qrMode === m}
                         onClick={() => setQrMode(m)}
-                        className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
-                          qrMode === m ? 'bg-slate-950 text-ink shadow' : 'text-slate-400 hover:text-ink'
+                        className={`px-3 py-1.5 rounded-lg font-medium transition-colors duration-300 cursor-pointer ${
+                          qrMode === m ? 'text-ink' : 'text-slate-400 hover:text-ink'
                         }`}
                       >
                         {m === 'shop' ? 'QR ของร้าน' : 'QR ใส่ยอดให้'}
@@ -840,7 +843,7 @@ export default function ShopFront({
                 <button
                   onClick={submitOrder}
                   disabled={submitting}
-                  className="text-white mt-4 w-full py-3 bg-brand-500 hover:bg-brand-600 font-semibold rounded-xl text-sm disabled:opacity-50 transition cursor-pointer"
+                  className="text-white mt-4 w-full py-3 btn-primary font-semibold rounded-xl text-sm disabled:opacity-50 transition cursor-pointer"
                 >
                   {submitting ? 'กำลังส่งคำสั่งซื้อ...' : demo ? 'ลองส่งคำสั่งซื้อ (ตัวอย่าง)' : 'ส่งสลิปยืนยันคำสั่งซื้อ'}
                 </button>
@@ -890,7 +893,7 @@ export default function ShopFront({
                   <div className="mt-4 space-y-2">
                     <Link
                       href={trackUrl}
-                      className="text-white w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-brand-500 hover:bg-brand-600 text-sm font-semibold rounded-xl"
+                      className="text-white w-full inline-flex items-center justify-center gap-1.5 py-2.5 btn-primary text-sm font-semibold rounded-xl"
                     >
                       <Clock className="w-4 h-4" /> ติดตามสถานะคำสั่งซื้อ
                     </Link>
@@ -911,7 +914,7 @@ export default function ShopFront({
                     นี่คือสิ่งที่ลูกค้าของคุณจะเห็นหลังส่งสลิป ส่วนร้านจะได้รับแจ้งเตือนพร้อมผลตรวจสลิปทันที
                     <Link
                       href="/login?mode=signup"
-                      className="text-white mt-3 w-full inline-flex items-center justify-center py-2.5 bg-brand-500 hover:bg-brand-600 text-sm font-semibold rounded-xl"
+                      className="text-white mt-3 w-full inline-flex items-center justify-center py-2.5 btn-primary text-sm font-semibold rounded-xl"
                     >
                       เปิดร้านของคุณฟรี
                     </Link>

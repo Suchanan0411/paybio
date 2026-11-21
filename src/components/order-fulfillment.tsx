@@ -65,11 +65,11 @@ export function OrderFulfillmentDialog<T extends FulfillmentOrder>({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => !saving && onClose()}>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4" onClick={() => !saving && onClose()}>
       <form
         onSubmit={save}
         onClick={(e) => e.stopPropagation()}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto"
+        className="glass glass-dialog rounded-2xl p-5 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-start gap-2">
           <div className="min-w-0">
@@ -178,7 +178,7 @@ export function OrderFulfillmentDialog<T extends FulfillmentOrder>({
         <button
           type="submit"
           disabled={saving}
-          className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-sm font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
+          className="text-white w-full py-2.5 btn-primary disabled:opacity-50 text-sm font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
         >
           <Save className="w-4 h-4" /> {saving ? 'กำลังบันทึก...' : 'บันทึกและแจ้งลูกค้า'}
         </button>

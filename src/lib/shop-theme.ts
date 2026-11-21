@@ -17,6 +17,7 @@ export type PaletteKey = keyof typeof PALETTES;
 
 // ฟอนต์ที่รองรับภาษาไทย (ตัวแปร CSS มาจาก src/lib/shop-fonts.ts)
 export const FONTS = {
+  anuphan: { label: 'Anuphan', note: 'สบายตา ค่าเริ่มต้น', cssVar: '--font-anuphan' },
   noto: { label: 'Noto Sans Thai', note: 'อ่านง่าย มาตรฐาน', cssVar: '--font-noto-sans-thai' },
   prompt: { label: 'Prompt', note: 'ทันสมัย เป็นมิตร', cssVar: '--font-shop-prompt' },
   kanit: { label: 'Kanit', note: 'หนักแน่น โดดเด่น', cssVar: '--font-shop-kanit' },
@@ -50,7 +51,7 @@ export function resolveTheme(theme: unknown, plan: string | null | undefined) {
   const level = PLAN_LIMITS[planOf({ plan })].theme;
   const t = (theme && typeof theme === 'object' ? theme : {}) as ShopTheme;
   const palette: PaletteKey = level !== 'standard' && isPalette(t.palette) ? t.palette : 'blue';
-  const font: FontKey = level !== 'standard' && isFont(t.font) ? t.font : 'noto';
+  const font: FontKey = level !== 'standard' && isFont(t.font) ? t.font : 'anuphan';
   const custom = level === 'custom' && t.custom_color && HEX_RE.test(t.custom_color) ? t.custom_color : null;
   return { palette, font, custom_color: custom };
 }

@@ -29,7 +29,7 @@ export function formatDay(value: string) {
   return new Date(value).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' });
 }
 
-export const card = 'bg-slate-900 border border-slate-800 rounded-2xl';
+export const card = 'glass rounded-2xl';
 export const th = 'text-left font-medium px-4 py-3 whitespace-nowrap';
 export const td = 'px-4 py-3 whitespace-nowrap';
 export const inputClass =

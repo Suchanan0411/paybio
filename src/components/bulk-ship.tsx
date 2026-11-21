@@ -56,11 +56,11 @@ export function BulkShipDialog<T extends ShipOrder>({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => !saving && onClose()}>
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md flex items-center justify-center p-4" onClick={() => !saving && onClose()}>
       <form
         onSubmit={save}
         onClick={(e) => e.stopPropagation()}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-lg space-y-4 max-h-[90vh] flex flex-col"
+        className="glass glass-dialog rounded-2xl p-5 w-full max-w-lg space-y-4 max-h-[90vh] flex flex-col"
       >
         <div className="flex items-start gap-2">
           <p className="font-semibold flex items-center gap-1.5 flex-1">
@@ -121,7 +121,7 @@ export function BulkShipDialog<T extends ShipOrder>({
         <button
           type="submit"
           disabled={saving || filled === 0}
-          className="text-white w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-sm font-semibold rounded-xl cursor-pointer"
+          className="text-white w-full py-2.5 btn-primary disabled:opacity-50 text-sm font-semibold rounded-xl cursor-pointer"
         >
           {saving ? 'กำลังบันทึก...' : `บันทึกและแจ้งลูกค้า (${filled} รายการ)`}
         </button>

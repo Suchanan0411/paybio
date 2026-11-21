@@ -59,7 +59,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4 text-center">
         <Store className="w-10 h-10 text-slate-500 mb-3" />
         <h1 className="text-xl font-bold mb-2">ไม่พบคำสั่งซื้อนี้</h1>
         <p className="text-sm text-slate-400">ลิงก์ติดตามอาจไม่ถูกต้อง กรุณาตรวจสอบลิงก์อีกครั้ง</p>
@@ -80,7 +80,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
   return (
     <div
       style={themeStyle(theme)}
-      className={`shop-theme ${SHOP_FONT_VARIABLES} min-h-screen bg-slate-950 text-ink flex justify-center px-4 pt-10 pb-10`}
+      className={`shop-theme ${SHOP_FONT_VARIABLES} min-h-screen text-ink flex justify-center px-4 pt-10 pb-10`}
     >
       <div className="w-full max-w-md space-y-4">
         <p className="text-center text-xs text-slate-400">
@@ -94,7 +94,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
         </div>
 
         {order.status !== 'rejected' && (
-          <ol className="bg-slate-900 border border-slate-800 rounded-2xl p-4 grid grid-cols-5 gap-1" aria-label="ขั้นตอนคำสั่งซื้อ">
+          <ol className="glass rounded-2xl p-4 grid grid-cols-5 gap-1" aria-label="ขั้นตอนคำสั่งซื้อ">
             {STAGES.map((s, i) => {
               const done = i <= current;
               return (
@@ -114,7 +114,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
         )}
 
         {order.tracking_number && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs space-y-2">
+          <div className="glass rounded-2xl p-4 text-xs space-y-2">
             <p className="font-semibold flex items-center gap-1.5 text-sm">
               <Truck className="w-4 h-4 text-brand-400" /> ข้อมูลพัสดุ
             </p>
@@ -142,7 +142,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
         )}
 
         {order.shop_message && (
-          <div className="bg-slate-900 border border-brand-500/30 rounded-2xl p-4 text-sm">
+          <div className="glass border-brand-500/30 rounded-2xl p-4 text-sm">
             <p className="font-semibold flex items-center gap-1.5 text-xs text-brand-400 mb-1.5">
               <MessageSquare className="w-3.5 h-3.5" /> ข้อความจากร้าน
             </p>
@@ -150,7 +150,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
           </div>
         )}
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs space-y-2.5">
+        <div className="glass rounded-2xl p-4 text-xs space-y-2.5">
           <div className="flex justify-between">
             <span className="text-slate-400">รหัสคำสั่งซื้อ</span>
             <span className="font-mono font-semibold">{order.order_number}</span>
@@ -178,7 +178,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
         </div>
 
         {events.length > 0 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div className="glass rounded-2xl p-4">
             <p className="text-xs font-semibold text-slate-400 mb-3">ประวัติคำสั่งซื้อ</p>
             <ol className="space-y-3 border-l border-slate-700 ml-1.5">
               {[...events].reverse().map((e, i) => (
@@ -206,7 +206,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
           {order.shop && (
             <Link
               href={`/${order.shop.slug}`}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-xl"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 btn-primary text-white text-sm font-semibold rounded-xl"
             >
               <Store className="w-4 h-4" /> กลับไปหน้าร้าน
             </Link>
@@ -225,7 +225,7 @@ async function Tracker({ params }: { params: PageProps<'/order/[token]'>['params
 
 function Skeleton() {
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center px-4 pt-10">
+    <div className="min-h-screen flex justify-center px-4 pt-10">
       <div className="w-full max-w-md space-y-4 animate-pulse">
         <div className="h-4 w-40 bg-slate-800 rounded mx-auto" />
         <div className="h-36 bg-slate-900 rounded-2xl" />

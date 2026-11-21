@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps<'/[slug]'>): Promis
 
 function Message({ title, text }: { title: string; text: string }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-ink flex flex-col items-center justify-center p-4 text-center">
+    <div className="min-h-screen text-ink flex flex-col items-center justify-center p-4 text-center">
       <Store className="w-10 h-10 text-slate-500 mb-3" />
       <h1 className="text-xl font-bold mb-2">{title}</h1>
       <p className="text-sm text-slate-400">{text}</p>
@@ -44,7 +44,7 @@ async function ShopLoader({ params }: { params: PageProps<'/[slug]'>['params'] }
 
 function Skeleton() {
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center p-4 pt-10">
+    <div className="min-h-screen flex justify-center p-4 pt-10">
       <div className="w-full max-w-md space-y-3 animate-pulse">
         <div className="w-20 h-20 rounded-full bg-slate-800 mx-auto" />
         <div className="h-6 w-40 bg-slate-800 rounded mx-auto" />
