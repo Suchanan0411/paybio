@@ -7,6 +7,7 @@ import { checkSlip, slipHash, type SlipCheck } from '@/lib/slip-check';
 import { notifyNewOrder, type NotifyShop } from '@/lib/order-notify';
 import { purgeExpiredSlips, slipQuotaBlocked, slipStorage, trimSlips } from '@/lib/slip-storage';
 import { addOrderEvents } from '@/lib/order-events';
+import { clientIp, rateLimited } from '@/lib/rate-limit';
 import { customerEmailConfigured, sendCustomerEmail } from '@/lib/customer-email';
 import {
   EMAIL_RE,
@@ -153,6 +154,16 @@ export async function POST(req: Request) {
     const profileId = (formData.get('profile_id') as string) || null;
     if (!profileId) {
       return NextResponse.json({ error: 'กรุณาสั่งซื้อผ่านหน้าร้านค้า' }, { status: 400 });
+    }
+    // กันยิงออเดอร์ปลอมรัวๆ (ทำให้โควตาร้านเต็ม / เปลืองโควตาตรวจสลิป)
+    // นับต่อ IP ต่อร้าน และต่อ IP ทั้งระบบ เผื่อลูกค้าหลายคนใช้ IP เดียวกันผ่านเครือข่ายมือถือ
+    const ip = clientIp(req);
+    const [perShop, perIp] = await Promise.all([
+      rateLimited('order-create', `${ip}:${profileId}`, 10, 10 * 60),
+      rateLimited('order-create', ip, 30, 60 * 60),
+    ]);
+    if (perShop || perIp) {
+      return NextResponse.json({ error: 'ส่งคำสั่งซื้อบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่' }, { status: 429 });
     }
     const orderNumber = `PB-${Date.now().toString().slice(-6)}`;
 
