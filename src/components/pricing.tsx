@@ -108,6 +108,7 @@ const baht = (n: number) => `฿${n.toLocaleString('th-TH')}`;
 
 export function Pricing() {
   const [billing, setBilling] = useState<Billing>('monthly');
+  const [compare, setCompare] = useState(1); // ตารางเทียบบนมือถือ: เริ่มที่ Pro
 
   return (
     <div>
@@ -193,10 +194,53 @@ export function Pricing() {
       </div>
 
       <h3 className="mt-14 mb-4 text-lg font-bold text-center">เปรียบเทียบสิทธิประโยชน์</h3>
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
-        <table className="w-full min-w-[720px] text-sm">
+
+      {/* มือถือ: เลือกแพ็กเกจทีละแบบ แล้วแสดงสิทธิ์เป็นรายการ (ตารางกว้างเกินจอ) */}
+      <div className="md:hidden">
+        <div role="tablist" className="liquid-host grid grid-cols-3 gap-1 p-1 glass rounded-xl text-xs mb-3">
+          <LiquidIndicator active={PLANS[compare].key} />
+          {PLANS.map((plan, i) => (
+            <button
+              key={plan.key}
+              role="tab"
+              aria-selected={compare === i}
+              data-active={compare === i}
+              onClick={() => setCompare(i)}
+              className={`py-2 rounded-lg font-semibold transition-colors duration-300 cursor-pointer whitespace-nowrap ${
+                compare === i ? 'text-white' : 'text-slate-400'
+              }`}
+            >
+              {plan.name.split(' ')[0]}
+            </button>
+          ))}
+        </div>
+        <div className="glass rounded-2xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-800">
+            <p className="font-semibold">{PLANS[compare].name}</p>
+            <p className="text-xs text-slate-500">
+              {PLANS[compare].monthly === 0
+                ? 'ฟรีตลอดชีพ'
+                : `${baht(PLANS[compare].monthly)} / เดือน หรือ ${baht(PLANS[compare].yearly)} / ปี`}
+            </p>
+          </div>
+          <dl className="divide-y divide-slate-800 text-sm">
+            {FEATURES.map((f) => (
+              <div key={f.label} className="px-4 py-3">
+                <dt className="text-xs text-slate-500">{f.label}</dt>
+                <dd className="mt-0.5">
+                  <CellValue value={f.values[compare]} />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+
+      {/* จอใหญ่: ตารางเทียบครบทั้ง 3 แพ็กเกจ */}
+      <div className="hidden md:block overflow-x-auto rounded-2xl glass">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="bg-slate-900 text-left">
+            <tr className="text-left">
               <th className="px-4 py-3 font-semibold text-slate-400 w-[28%]">คุณสมบัติ (Features)</th>
               {PLANS.map((plan) => (
                 <th

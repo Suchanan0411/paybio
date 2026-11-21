@@ -16,13 +16,13 @@ export default function PricingPage() {
         <Link href="/" aria-label="PayBio หน้าแรก">
           <Logo size="sm" />
         </Link>
-        <nav className="flex items-center gap-2 text-sm">
-          <Link href="/login" className="px-3 py-1.5 text-slate-300 hover:text-ink transition">
+        <nav className="flex items-center gap-1 sm:gap-2 text-sm shrink-0">
+          <Link href="/login" className="whitespace-nowrap px-2.5 sm:px-3 py-1.5 text-slate-300 hover:text-ink transition">
             เข้าสู่ระบบ
           </Link>
           <Link
             href="/login?mode=signup"
-            className="text-white px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
+            className="whitespace-nowrap text-white px-3 sm:px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
           >
             สมัครฟรี
           </Link>

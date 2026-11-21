@@ -36,16 +36,16 @@ export default function Home() {
         <Link href="/" aria-label="PayBio หน้าแรก">
           <Logo size="sm" />
         </Link>
-        <nav className="flex items-center gap-2 text-sm">
-          <Link href="/pricing" className="px-3 py-1.5 text-slate-300 hover:text-ink transition">
+        <nav className="flex items-center gap-1 sm:gap-2 text-sm shrink-0">
+          <Link href="/pricing" className="hidden sm:inline whitespace-nowrap px-3 py-1.5 text-slate-300 hover:text-ink transition">
             ราคา
           </Link>
-          <Link href="/login" className="px-3 py-1.5 text-slate-300 hover:text-ink transition">
+          <Link href="/login" className="whitespace-nowrap px-2.5 sm:px-3 py-1.5 text-slate-300 hover:text-ink transition">
             เข้าสู่ระบบ
           </Link>
           <Link
             href="/login?mode=signup"
-            className="text-white px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
+            className="whitespace-nowrap text-white px-3 sm:px-3.5 py-1.5 btn-primary rounded-lg font-semibold transition"
           >
             สมัครฟรี
           </Link>
@@ -57,7 +57,7 @@ export default function Home() {
           <span className="inline-block text-xs font-medium text-brand-400 bg-brand-500/10 border border-brand-500/20 px-3 py-1 rounded-full">
             รับเงินผ่านพร้อมเพย์ ด้วยลิงก์เดียว
           </span>
-          <h1 className="mt-5 text-4xl sm:text-5xl font-bold leading-tight">
+          <h1 className="mt-5 text-[1.85rem] sm:text-5xl font-bold leading-tight text-balance">
             เปิดร้านออนไลน์ใน Bio
             <br />
             <span className="text-brand-400">รับเงินพร้อมเพย์ได้ทันที</span>
