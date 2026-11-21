@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Anuphan, Noto_Sans_Thai, Geist_Mono, Poppins, Prompt } from "next/font/google";
 import "./globals.css";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -34,6 +34,17 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+// มือถือ: ใช้พื้นที่เต็มจอ (env(safe-area-inset-*) ใช้ได้) และแถบสถานะเป็นสีเดียวกับพื้นหลัง
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#eef2f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "PayBio — เปิดร้านใน Bio รับเงินพร้อมเพย์",

@@ -540,7 +540,7 @@ export default function ManageShopPage() {
         {order.slip_url ? (
           <button
             onClick={() => setPreviewOrder(order)}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 flex items-center gap-1 border border-slate-700 cursor-pointer"
+            className="px-3 py-2 sm:px-2.5 sm:py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 flex items-center gap-1 border border-slate-700 cursor-pointer"
           >
             <ImageIcon className="w-3.5 h-3.5" /> สลิป
           </button>
@@ -553,7 +553,7 @@ export default function ManageShopPage() {
           <button
             onClick={() => updateOrderStatus(order, 'paid')}
             disabled={updatingId === order.id}
-            className="text-white px-2.5 py-1 rounded-lg btn-primary disabled:opacity-50 font-medium cursor-pointer"
+            className="text-white px-3 py-2 sm:px-2.5 sm:py-1 rounded-lg btn-primary disabled:opacity-50 font-medium cursor-pointer"
           >
             อนุมัติ
           </button>
@@ -562,7 +562,7 @@ export default function ManageShopPage() {
           <button
             onClick={() => updateOrderStatus(order, 'rejected')}
             disabled={updatingId === order.id}
-            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-500/80 text-slate-300 hover:text-white disabled:opacity-50 cursor-pointer"
+            className="px-3 py-2 sm:px-2.5 sm:py-1 rounded-lg bg-slate-800 hover:bg-rose-500/80 text-slate-300 hover:text-white disabled:opacity-50 cursor-pointer"
           >
             ปฏิเสธ
           </button>
@@ -570,7 +570,7 @@ export default function ManageShopPage() {
         <button
           onClick={() => setFulfillOrder(order)}
           title="อัปเดตการจัดส่ง เลขพัสดุ และข้อความถึงลูกค้า"
-          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1 cursor-pointer"
+          className="px-3 py-2 sm:px-2.5 sm:py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1 cursor-pointer"
         >
           <Truck className="w-3.5 h-3.5" /> {order.status === 'paid' ? 'จัดส่ง' : 'แจ้งลูกค้า'}
         </button>
@@ -610,7 +610,7 @@ export default function ManageShopPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+      <main className="max-w-5xl mx-auto p-4 pb-28 sm:pb-4 md:p-8 space-y-4 sm:space-y-6">
         <OrderAlerts
           orders={orders}
           fetchOrders={fetchOrders}
@@ -649,16 +649,16 @@ export default function ManageShopPage() {
         )}
 
         {/* หัวร้าน */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass p-6 rounded-2xl">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 glass p-4 sm:p-6 rounded-2xl">
           <div className="min-w-0">
             <span className="text-xs uppercase font-semibold text-brand-400 tracking-wider">แผงควบคุมร้านค้า</span>
-            <h1 className="text-2xl font-bold mt-1 truncate">{shop.shop_name}</h1>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">{shopUrl}</p>
+            <h1 className="text-xl sm:text-2xl font-bold mt-1 truncate">{shop.shop_name}</h1>
+            <p className="text-xs text-slate-400 font-mono mt-0.5 truncate">{shopUrl}</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-2 sm:flex gap-2">
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-xl border border-slate-700 transition cursor-pointer"
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-xl border border-slate-700 transition cursor-pointer"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-brand-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? 'คัดลอกแล้ว!' : 'คัดลอกลิงก์ Bio'}
@@ -666,15 +666,15 @@ export default function ManageShopPage() {
             <Link
               href={`/${shop.slug}`}
               target="_blank"
-              className="text-white flex items-center gap-1.5 px-3.5 py-2 btn-primary text-xs font-semibold rounded-xl transition"
+              className="text-white flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 btn-primary text-xs font-semibold rounded-xl transition"
             >
               เปิดหน้าร้าน <ExternalLink className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
 
-        {/* แท็บ */}
-        <nav className="liquid-host flex gap-1 p-1 glass rounded-xl overflow-x-auto">
+        {/* แท็บ (จอใหญ่) — บนมือถือใช้แถบเมนูด้านล่างแทน */}
+        <nav className="liquid-host hidden sm:flex gap-1 p-1 glass rounded-xl overflow-x-auto">
           <LiquidIndicator active={tab} />
           {TABS.map(({ key, label, Icon }) => (
             <button
@@ -742,8 +742,8 @@ export default function ManageShopPage() {
 
         {tab === 'orders' && (
           <div className="glass rounded-2xl overflow-hidden">
-            <div className="p-4 border-b border-slate-800 flex flex-wrap gap-2 justify-between items-center">
-              <div className="liquid-host flex flex-wrap gap-1.5">
+            <div className="p-4 border-b border-slate-800 flex gap-2 justify-between items-center">
+              <div className="liquid-host flex flex-1 min-w-0 gap-1.5 overflow-x-auto sm:flex-wrap sm:overflow-visible">
                 <LiquidIndicator active={orderFilter} />
                 {(['all', 'pending', 'toship', 'paid', 'rejected'] as const).map((key) => (
                   <button
@@ -753,7 +753,7 @@ export default function ManageShopPage() {
                       setOrderFilter(key);
                       setSelectedIds(new Set());
                     }}
-                    className={`text-xs px-3 py-1.5 rounded-lg border transition-colors duration-300 cursor-pointer ${
+                    className={`shrink-0 whitespace-nowrap text-xs px-3 py-1.5 rounded-lg border transition-colors duration-300 cursor-pointer ${
                       orderFilter === key
                         ? 'border-transparent text-white'
                         : 'border-slate-800 text-slate-300 hover:bg-slate-800'
@@ -766,7 +766,7 @@ export default function ManageShopPage() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 transition cursor-pointer disabled:opacity-50"
+                className="shrink-0 p-2 sm:p-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 transition cursor-pointer disabled:opacity-50"
                 title="รีเฟรชข้อมูล"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -1116,6 +1116,38 @@ export default function ManageShopPage() {
         )}
       </main>
 
+      {/* แถบเมนูด้านล่างแบบแอป (เฉพาะมือถือ) เว้นที่ให้แถบโฮมของ iPhone */}
+      <nav
+        aria-label="เมนูหลัก"
+        className="app-tabbar sm:hidden fixed bottom-0 inset-x-0 z-40 border-t glass-bar px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+      >
+        <div className="liquid-host grid grid-cols-4 gap-1 [--liquid-radius:0.875rem]">
+          <LiquidIndicator active={tab} />
+          {TABS.map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              data-active={tab === key}
+              aria-current={tab === key ? 'page' : undefined}
+              onClick={() => {
+                setTab(key);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-[0.875rem] text-[11px] font-medium transition-colors duration-300 ${
+                tab === key ? 'text-white' : 'text-slate-400'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              {label}
+              {key === 'orders' && pendingOrders.length > 0 && (
+                <span className="absolute top-0.5 right-[18%] min-w-4 h-4 px-1 rounded-full bg-amber-500 text-white text-[10px] leading-4 text-center">
+                  {pendingOrders.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       {/* แจ้งเตือน */}
       {fulfillOrder && (
         <OrderFulfillmentDialog
@@ -1142,7 +1174,7 @@ export default function ManageShopPage() {
 
       {toast && (
         <div
-          className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-medium shadow-xl border ${
+          className={`fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-medium shadow-xl border ${
             toast.type === 'ok'
               ? 'bg-brand-500/15 border-brand-500/40 text-brand-300'
               : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
